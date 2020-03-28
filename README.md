@@ -3,6 +3,14 @@
 ## Description
 An SMS bot for easily getting the latest COVID-19 updates for your area with a provided zip code.
 
+## Running the API locally
+1. Clone or fork + clone this repository to the desired directory on your machine
+
+2. `cd` into `ncov19-sms-bot-api`
+
+3. Run the command:
+`npm install`
+to install required project dependencies
 
 ## Setting up local testing with your Twilio phone number
 1. Download the twilio CLI package with the following command:

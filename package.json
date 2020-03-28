@@ -1,0 +1,28 @@
+{
+  "name": "ncov19-sms-bot-api",
+  "version": "1.0.0",
+  "description": "An SMS bot for easily getting the latest COVID-19 updates for your area with a provided zip code.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ncov19-us/ncov19-sms-bot-api.git"
+  },
+  "author": "ncov19us",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ncov19-us/ncov19-sms-bot-api/issues"
+  },
+  "homepage": "https://github.com/ncov19-us/ncov19-sms-bot-api#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "helmet": "^3.22.0",
+    "nodemon": "^2.0.2",
+    "twilio": "^3.41.1",
+    "twilio-cli": "^1.11.0"
+  }
+}
