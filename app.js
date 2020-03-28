@@ -5,7 +5,6 @@ require("dotenv").config(); // THIS MUST COME BEFORE TWILIO DECLARATION
 const cors = require("cors"); // easily manage cors access
 const helmet = require("helmet"); // hide server technology being used
 
-
 // instantiating server
 const app = express();
 
