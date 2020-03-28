@@ -18,12 +18,16 @@
   },
   "homepage": "https://github.com/ncov19-us/ncov19-sms-bot-api#readme",
   "dependencies": {
+    "axios": "^0.19.2",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "helmet": "^3.22.0",
     "nodemon": "^2.0.2",
     "twilio": "^3.41.1",
-    "twilio-cli": "^1.11.0"
+    "twilio-cli": "^1.11.0",
+    "us-counties": "^1.2.1",
+    "which-polygon": "^2.2.0",
+    "zipcodes": "^8.0.0"
   }
 }
