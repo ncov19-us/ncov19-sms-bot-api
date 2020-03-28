@@ -3,8 +3,15 @@
   "version": "1.0.0",
   "description": "An SMS bot for easily getting the latest COVID-19 updates for your area with a provided zip code.",
   "main": "index.js",
+  "jest": {
+    "verbose": true,
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "server": "nodemon index.js"
   },
   "repository": {
@@ -23,11 +30,15 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "helmet": "^3.22.0",
-    "nodemon": "^2.0.2",
     "twilio": "^3.41.1",
-    "twilio-cli": "^1.11.0",
     "us-counties": "^1.2.1",
     "which-polygon": "^2.2.0",
     "zipcodes": "^8.0.0"
+  },
+  "devDependencies": {
+    "jest": "^25.2.3",
+    "nodemon": "^2.0.2",
+    "supertest": "^4.0.2",
+    "twilio-cli": "^1.11.0"
   }
 }

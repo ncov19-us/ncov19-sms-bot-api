@@ -1,7 +1,7 @@
 // library imports
 const app = require("./app.js");
 // enabling easy use of environment variables through a .env file
-require("dotenv").config(); // THIS MUST COME BEFORE TWILIO DECLARATION
+require("dotenv").config();
 
 // test endpoint to determine status of API
 app.get("/", (req, res) => {
@@ -12,3 +12,5 @@ app.get("/", (req, res) => {
 app.listen(process.env.PORT, () => {
   console.log(`Listening on port ${process.env.PORT}...`);
 });
+
+module.exports = app;
