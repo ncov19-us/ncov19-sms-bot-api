@@ -16,6 +16,6 @@ describe("test route located in index.js", () => {
       .end((err, res) => {
         if (err) done(err);
         done(err);
-      })
+      });
   });
 });
