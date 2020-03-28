@@ -22,3 +22,7 @@ and then provide your Twilio account's SID and Auth Token in the inputs
 
 3. Initialize your local machines Twilio webhook with the following command, replacing the given information with your own Twilio number and endpoint
 `twilio phone-numbers:update "+15017122661" --sms-url="http://localhost:1337/sms"`
+
+## Routes
+
+### Base URL
