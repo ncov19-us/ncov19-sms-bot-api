@@ -26,3 +26,6 @@ and then provide your Twilio account's SID and Auth Token in the inputs
 ## Routes
 
 ### Base URL
+
+## Testing
+Unit/Integration tests are being done with Jest and Supertest respectively.  To run tests, just make sure you have installed all project dependencies with `npm install` and then run `npm run test`.
