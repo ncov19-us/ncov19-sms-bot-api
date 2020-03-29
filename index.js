@@ -14,7 +14,9 @@ app.get("/", (req, res) => {
 
 // app listens on the decided port of the team/environment
 app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}...`);
+  console.log(`Listening on port ${PORT}...`, function(err) {
+    console.log(err)
+  });
 });
 
 module.exports = app;
