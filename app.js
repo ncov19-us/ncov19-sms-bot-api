@@ -1,7 +1,9 @@
 // library imports
 const express = require("express");
 // enabling easy use of environment variables through a .env file
-require("dotenv").config(); // THIS MUST COME BEFORE TWILIO DECLARATION
+if (process.env.NODE_ENV !== 'production') {
+  require("dotenv").config();
+}
 const cors = require("cors"); // easily manage cors access
 const helmet = require("helmet"); // hide server technology being used
 

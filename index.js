@@ -1,7 +1,9 @@
 // library imports
 const app = require("./app.js");
 // enabling easy use of environment variables through a .env file
-require("dotenv").config();
+if (process.env.NODE_ENV !== 'production') {
+  require("dotenv").config();
+}
 
 const PORT = process.env.PORT || 5000;
 
