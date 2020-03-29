@@ -13,7 +13,7 @@
   "scripts": {
     "test": "jest",
     "server": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node -–max-old-space-size=2048 index.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
     "express": "^4.17.1",
     "helmet": "^3.22.0",
     "twilio": "^3.41.1",
+    "us-counties": "^1.2.1",
     "which-polygon": "^2.2.0",
     "zipcodes": "^8.0.0"
   },
