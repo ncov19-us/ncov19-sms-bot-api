@@ -19,58 +19,60 @@ const router = require("express").Router();
 router.post("/", (req, res) => {
   // destructuring user input from request body
   const { Body } = req.body;
-  // if (input is valid) {
-  //     make request to main API and continue
-  // } else {
-  //     go ahead and create error message
-  // }
 
-  // this already provides city/state, but current dashboard API is expecting county/state
-  const { latitude, longitude, state } = zipcodes.lookup(Body);
-
-  // using this library to get county from coords
-  // look into `node -–max-old-space-size=8192 your-file.js` or potentially running us-counties as its own process to help RAM performance
-  const { NAMELSAD10 } = findCounty([longitude, latitude]);
-
-  // declaring options for POST request to main API
-  const postOptions = {
-    state: state,
-    county: NAMELSAD10
-  };
-
-  console.log(postOptions);
-
-  // where the API call to DB will go
-  // axios.post(`${process.env.NCOV19_API_ENDPOINT}`, postOptions)
-  // .then(res => {
-  //     console.log(res);
-  // })
-  // .catch(err => {
-  //     console.log(err);
-  // })
-
-  // twilio webhooks expects their TwiMl SML format specified here: https://www.twilio.com/docs/glossary/what-is-twilio-markup-language-twiml
+  // twilio webhooks expects their TwiMl XML format specified here: https://www.twilio.com/docs/glossary/what-is-twilio-markup-language-twiml
   // can also use raw XML in lieu of provided helper functions
   const twiml = new MessagingResponse();
 
-  // setting inital message, request header contents
-  twiml.message("The robots are coming!");
-  res.writeHead(200, { "Content-Type": "text/xml" });
-  res.end(twiml.toString());
+  // checks if user inputted proper info
+  try {
+    // this already provides city/state, but current dashboard API is expecting county/state
+    const { latitude, longitude, state } = zipcodes.lookup(Body);
 
-  // // method for sending messages
-  // client.messages
-  // .create({
-  //     body: "This is the ship that made the Kessel Run in fourteen parsecs?",
-  //     from: "+17735707220",
-  //     to: "+17408416256"
-  // })
-  // .then(message => {
-  //     console.log(message.sid);
-  // })
-  // .catch(err => {
-  //     console.log(err);
-  // });
+    // using this library to get county from coords
+    // look into `node -–max-old-space-size=8192 your-file.js` or potentially running us-counties as its own process to help RAM performance
+    const { NAMELSAD10 } = findCounty([longitude, latitude]);
+
+    // declaring options for POST request to main API
+    const postOptions = {
+      state: state,
+      county: NAMELSAD10
+    };
+
+    console.log(postOptions);
+    // where the API call to DB will go
+    // axios.post(`${process.env.NCOV19_API_ENDPOINT}`, postOptions)
+    // .then(res => {
+    //     console.log(res);
+    // })
+    // .catch(err => {
+    //     console.log(err);
+    // })
+    // setting message in the case of success, request header contents
+
+    twiml.message(
+      `
+      Here are your local updates:
+      ${postOptions.state}
+      ${postOptions.county}
+
+      For more indepth info: https://ncov19.us/
+      `
+    );
+    res.writeHead(200, { "Content-Type": "text/xml" });
+    res.end(twiml.toString());
+    } catch (err) {
+    // setting inital message in case of failure, request header contents
+    twiml.message(
+      `
+    Sorry, I didn't understand that message.  Make sure to respond with a 5 digit zip code.
+
+    For more indepth info: https://ncov19.us/
+    `
+    );
+    res.writeHead(200, { "Content-Type": "text/xml" });
+    res.end(twiml.toString());
+  }
 });
 
 module.exports = router;
