@@ -1,8 +1,10 @@
-# ncov19-sms-bot-api
+# ncov19-sms-bot-api 
 
 ## Description
 An SMS bot for easily getting the latest COVID-19 updates for your area with a provided zip code.
 
+## URLs
+Staging Base URL: https://ncov19-sms-bot-api-staging.herokuapp.com/
 ## Running the API locally
 1. Clone or fork + clone this repository to the desired directory on your machine
 

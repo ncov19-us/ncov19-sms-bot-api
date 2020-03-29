@@ -5,7 +5,9 @@ const counties = require("us-counties");
 const whichPolygon = require("which-polygon");
 const findCounty = whichPolygon(counties);
 // enabling easy use of environment variables through a .env file
-require("dotenv").config(); // THIS MUST COME BEFORE TWILIO DECLARATION
+if (process.env.NODE_ENV !== 'production') {
+  require("dotenv").config();
+}
 // using env variables for this shorthand verification
 // const client = require("twilio")(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN); may not be necessary for the time being
 const MessagingResponse = require("twilio").twiml.MessagingResponse;
