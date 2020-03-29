@@ -1,4 +1,4 @@
-# ncov19-sms-bot-api
+# ncov19-sms-bot-api 
 
 ## Description
 An SMS bot for easily getting the latest COVID-19 updates for your area with a provided zip code.
