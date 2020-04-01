@@ -72,26 +72,32 @@ router.post('/', async (req, res) => {
 
     // declaring options for POST request to main API
     const postOptions = {
-      state: state,
-      county: county
+      state: state
+      // county: county
     };
 
     console.log(postOptions);
-    // where the API call to DB will go
-    // axios.post(`${process.env.NCOV19_API_ENDPOINT}`, postOptions)
-    // .then(res => {
-    //     console.log(res);
-    // })
-    // .catch(err => {
-    //     console.log(err);
-    // })
-    // setting message in the case of success, request header contents
+
+    let stateInfo = {};
+    await axios
+      .post('https://covid19-us-api-staging.herokuapp.com/stats', postOptions)
+      .then(res => {
+        console.log('POST REQUEST', res.data);
+        stateInfo = { ...res.data.message };
+      });
+
+    console.log(stateInfo);
 
     twiml.message(
       `
       Here are your local updates:
       ${postOptions.state}
-      ${postOptions.county}
+      Total tested: ${stateInfo.tested}
+      Tested today: ${stateInfo.todays_tested}
+      Total confirmed cases: ${stateInfo.confirmed}
+      Confirmed cases today: ${stateInfo.todays_confirmed}
+      Total deaths: ${stateInfo.deaths}
+      Today's deaths: ${stateInfo.todays_deaths}
 
       For more indepth info: https://ncov19.us/
       `
