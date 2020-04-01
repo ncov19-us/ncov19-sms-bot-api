@@ -13,7 +13,7 @@
   "scripts": {
     "test": "jest",
     "server": "nodemon index.js",
-    "start": "node -–max-old-space-size=2048 index.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
