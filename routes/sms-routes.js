@@ -1,9 +1,4 @@
 const axios = require('axios');
-// library for getting zipcode info to avoid implementing more HTTP requests via an API
-const zipcodes = require('zipcodes');
-const counties = require('us-counties');
-const whichPolygon = require('which-polygon');
-const findCounty = whichPolygon(counties);
 // enabling easy use of environment variables through a .env file
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
