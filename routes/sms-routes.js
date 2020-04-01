@@ -22,7 +22,7 @@ const router = require('express').Router();
 // -- POST Routes --
 router.post('/', async (req, res) => {
   // destructuring user input from request body
-  console.log('REQ.BODY', req.body);
+  console.log('REQ.BODY', req.body.Body);
   const postalcode = req.body.Body; // postal code as string
 
   console.log(postalcode);
@@ -50,11 +50,12 @@ router.post('/', async (req, res) => {
         //   res.data.results[0].address_components
         // );
         // console.log('GEOMETRY', res.data.results[0].geometry);
+        console.log(res)
         if (res.data.results.length !== 0) {
           const formatedAddressArray = res.data.results[0].formatted_address.split(
             ','
           );
-          console.log('FORMATED ADDRESS ARRAY', formatedAddressArray);
+          // console.log('FORMATED ADDRESS ARRAY', formatedAddressArray);
           state = formatedAddressArray[1].split(' ')[1];
           county = formatedAddressArray[0];
         } else {
@@ -85,16 +86,17 @@ router.post('/', async (req, res) => {
 
     twiml.message(
       `
-      Here are your local updates:
-      ${postOptions.state}
-      Total tested: ${stateInfo.tested}
-      Tested today: ${stateInfo.todays_tested}
-      Total confirmed cases: ${stateInfo.confirmed}
-      Confirmed cases today: ${stateInfo.todays_confirmed}
-      Total deaths: ${stateInfo.deaths}
-      Today's deaths: ${stateInfo.todays_deaths}
+Here are your local updates:
+${postOptions.state}
 
-      For more indepth info: https://ncov19.us/
+Confirmed cases today: ${stateInfo.todays_confirmed}
+Total confirmed cases: ${stateInfo.confirmed}
+Tested today: ${stateInfo.todays_tested}
+Total tested: ${stateInfo.tested}
+Today's deaths: ${stateInfo.todays_deaths}
+Total deaths: ${stateInfo.deaths}
+
+For more indepth info: https://ncov19.us/
       `
     );
     res.writeHead(200, { 'Content-Type': 'text/xml' });
@@ -103,9 +105,9 @@ router.post('/', async (req, res) => {
     // setting inital message in case of failure, request header contents
     twiml.message(
       `
-    Sorry, I didn't understand that message.  Make sure to respond with a 5 digit zip code.
+Sorry, I didn't understand that message.  Make sure to respond with a 5 digit zip code.
 
-    For more indepth info: https://ncov19.us/
+For more indepth info: https://ncov19.us/
     `
     );
     res.writeHead(200, { 'Content-Type': 'text/xml' });
