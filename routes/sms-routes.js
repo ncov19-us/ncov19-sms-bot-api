@@ -82,22 +82,23 @@ router.post('/', async (req, res) => {
       .post('https://covid19-us-api-staging.herokuapp.com/county', postOptions)
       .then(res => {
         console.log('POST REQUEST', res.data);
-        stateInfo = { ...res.data.message };
+        countyInfo = { ...res.data.message[0] };
       });
 
-    console.log(stateInfo);
+    console.log(countyInfo);
 
     twiml.message(
       `
       Here are your local updates:
       ${postOptions.state}
-      ${postOptions.county}
-      Total tested: ${stateInfo.tested}
-      Tested today: ${stateInfo.todays_tested}
-      Total confirmed cases: ${stateInfo.confirmed}
-      Confirmed cases today: ${stateInfo.todays_confirmed}
-      Total deaths: ${stateInfo.deaths}
-      Today's deaths: ${stateInfo.todays_deaths}
+      ${postOptions.county} County
+      
+      Confirmed cases: ${countyInfo.confirmed}
+      New cases: ${countyInfo.new}
+      Total deaths: ${countyInfo.death}
+      New deaths: ${countyInfo.new_death}
+      Fatality rate: ${countyInfo.fatality_rate}
+      Last update: ${countyInfo.last_update}
 
       For more indepth info: https://ncov19.us/
       `
