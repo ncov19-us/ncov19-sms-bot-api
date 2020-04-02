@@ -57,11 +57,10 @@ router.post('/', async (req, res) => {
           );
           console.log('FORMATED ADDRESS ARRAY', formatedAddressArray);
           state = formatedAddressArray[1].split(' ')[1];
-          // const countyArray = formatedAddressArray[0].split(' ');
-          county = formatedAddressArray[0]
-            .split(' ')
-            .pop()
-            .join(' ');
+          const countyArray = formatedAddressArray[0].split(' ');
+          countyArray.pop();
+          county = countyArray.join(' ');
+          console.log(county);
         } else {
           console.log('else');
         }
@@ -80,7 +79,7 @@ router.post('/', async (req, res) => {
 
     let stateInfo = {};
     await axios
-      .post('https://github.com/ncov19-us/back-end/county', postOptions)
+      .post('https://covid19-us-api-staging.herokuapp.com/county', postOptions)
       .then(res => {
         console.log('POST REQUEST', res.data);
         stateInfo = { ...res.data.message };
