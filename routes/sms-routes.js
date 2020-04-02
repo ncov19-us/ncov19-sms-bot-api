@@ -22,8 +22,8 @@ const router = require("express").Router();
 // -- POST Routes --
 router.post("/", async (req, res) => {
   // destructuring user input from request body
-  console.log("REQ.BODY", req.body.Body);
-  const postalcode = req.body.Body; // postal code as string
+  console.log('REQ.BODY', req.body);
+  const postalcode = req.body.Body;
 
   console.log(postalcode);
   // twilio webhooks expects their TwiMl XML format specified here: https://www.twilio.com/docs/glossary/what-is-twilio-markup-language-twiml
@@ -55,9 +55,12 @@ router.post("/", async (req, res) => {
           const formatedAddressArray = res.data.results[0].formatted_address.split(
             ","
           );
-          // console.log('FORMATED ADDRESS ARRAY', formatedAddressArray);
-          state = formatedAddressArray[1].split(" ")[1];
-          county = formatedAddressArray[0];
+          console.log('FORMATED ADDRESS ARRAY', formatedAddressArray);
+          state = formatedAddressArray[1].split(' ')[1];
+          const countyArray = formatedAddressArray[0].split(' ');
+          countyArray.pop();
+          county = countyArray.join(' ');
+          console.log(county);
         } else {
           console.log("else");
         }
@@ -68,26 +71,35 @@ router.post("/", async (req, res) => {
 
     // declaring options for POST request to main API
     const postOptions = {
-      state: state
-      // county: county
+      state: state,
+      county: county
     };
 
     console.log(postOptions);
 
     let stateInfo = {};
     await axios
-      .post("https://covid19-us-api-staging.herokuapp.com/stats", postOptions)
+      .post('https://covid19-us-api-staging.herokuapp.com/county', postOptions)
       .then(res => {
-        console.log("POST REQUEST", res.data);
-        stateInfo = { ...res.data.message };
+        console.log('POST REQUEST', res.data);
+        countyInfo = { ...res.data.message[0] };
       });
 
-    console.log(stateInfo);
+    console.log(countyInfo);
 
     twiml.message(
       `
-Here are your local updates:
-${postOptions.state}
+      Here are your local updates:
+      ${postOptions.state}
+      ${postOptions.county} County
+      
+      Confirmed cases: ${countyInfo.confirmed}
+      New cases: ${countyInfo.new}
+      Total deaths: ${countyInfo.death}
+      New deaths: ${countyInfo.new_death}
+      Fatality rate: ${countyInfo.fatality_rate}
+      Last update: ${countyInfo.last_update}
+
 
 Confirmed cases today: ${stateInfo.todays_confirmed}
 Total confirmed cases: ${stateInfo.confirmed}
