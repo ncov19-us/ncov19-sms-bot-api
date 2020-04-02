@@ -22,12 +22,16 @@ const router = require("express").Router();
 // -- POST Routes --
 router.post("/", async (req, res) => {
   // destructuring user input from request body
-  console.log('REQ.BODY', req.body);
+  console.log("REQ.BODY", req.body);
+
+  // console.log("REQ.BODY", req);
+
   const postalcode = req.body.Body;
 
   console.log(postalcode);
   // twilio webhooks expects their TwiMl XML format specified here: https://www.twilio.com/docs/glossary/what-is-twilio-markup-language-twiml
   // can also use raw XML in lieu of provided helper functions
+  // initiating a new messaging object, to be appended to later (see ~line 90ish)
   const twiml = new MessagingResponse();
 
   // checks if user inputted proper info
@@ -50,17 +54,17 @@ router.post("/", async (req, res) => {
         //   res.data.results[0].address_components
         // );
         // console.log('GEOMETRY', res.data.results[0].geometry);
-        console.log(res);
+        // console.log(res);
         if (res.data.results.length !== 0) {
           const formatedAddressArray = res.data.results[0].formatted_address.split(
             ","
           );
-          console.log('FORMATED ADDRESS ARRAY', formatedAddressArray);
-          state = formatedAddressArray[1].split(' ')[1];
-          const countyArray = formatedAddressArray[0].split(' ');
+          console.log("FORMATED ADDRESS ARRAY", formatedAddressArray);
+          state = formatedAddressArray[1].split(" ")[1];
+          const countyArray = formatedAddressArray[0].split(" ");
           countyArray.pop();
-          county = countyArray.join(' ');
-          console.log(county);
+          county = countyArray.join(" ");
+          // console.log(county);
         } else {
           console.log("else");
         }
@@ -79,10 +83,11 @@ router.post("/", async (req, res) => {
 
     let stateInfo = {};
     await axios
-      .post('https://covid19-us-api-staging.herokuapp.com/county', postOptions)
+      .post("https://covid19-us-api-staging.herokuapp.com/county", postOptions)
       .then(res => {
-        console.log('POST REQUEST', res.data);
+        // console.log("POST REQUEST", res.data);
         countyInfo = { ...res.data.message[0] };
+        console.log(res.data);
       });
 
     console.log(countyInfo);
