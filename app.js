@@ -13,7 +13,7 @@ const app = express();
 // middleware
 app.use(express.urlencoded({ extended: true })); // learn more about this middleware here: https://expressjs.com/en/5x/api.html#express.urlencoded
 app.use(helmet());
-app.use(express.json());
+// app.use(express.json());
 app.use(cors({ origin: "*" }));
 
 // route imports

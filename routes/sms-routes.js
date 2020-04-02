@@ -87,7 +87,7 @@ router.post("/", async (req, res) => {
       .then(res => {
         // console.log("POST REQUEST", res.data);
         countyInfo = { ...res.data.message[0] };
-        console.log(res.data);
+        console.log();
       });
 
     console.log(countyInfo);
