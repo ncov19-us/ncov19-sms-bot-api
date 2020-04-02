@@ -23,7 +23,8 @@ const router = require('express').Router();
 router.post('/', async (req, res) => {
   // destructuring user input from request body
   console.log('REQ.BODY', req.body);
-  const postalcode = req.body.Body; // postal code as string
+  const postalcode = req.body.Body;
+  // TODO: Make sure postal code is string, 5 digits, in US
 
   console.log(postalcode);
   // twilio webhooks expects their TwiMl XML format specified here: https://www.twilio.com/docs/glossary/what-is-twilio-markup-language-twiml
@@ -56,7 +57,11 @@ router.post('/', async (req, res) => {
           );
           console.log('FORMATED ADDRESS ARRAY', formatedAddressArray);
           state = formatedAddressArray[1].split(' ')[1];
-          county = formatedAddressArray[0];
+          // const countyArray = formatedAddressArray[0].split(' ');
+          county = formatedAddressArray[0]
+            .split(' ')
+            .pop()
+            .join(' ');
         } else {
           console.log('else');
         }
@@ -67,15 +72,15 @@ router.post('/', async (req, res) => {
 
     // declaring options for POST request to main API
     const postOptions = {
-      state: state
-      // county: county
+      state: state,
+      county: county
     };
 
     console.log(postOptions);
 
     let stateInfo = {};
     await axios
-      .post('https://covid19-us-api-staging.herokuapp.com/stats', postOptions)
+      .post('https://github.com/ncov19-us/back-end/county', postOptions)
       .then(res => {
         console.log('POST REQUEST', res.data);
         stateInfo = { ...res.data.message };
@@ -87,6 +92,7 @@ router.post('/', async (req, res) => {
       `
       Here are your local updates:
       ${postOptions.state}
+      ${postOptions.county}
       Total tested: ${stateInfo.tested}
       Tested today: ${stateInfo.todays_tested}
       Total confirmed cases: ${stateInfo.confirmed}
