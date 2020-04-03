@@ -1,0 +1,4 @@
+let test;
+
+console.log(test.length())
+
