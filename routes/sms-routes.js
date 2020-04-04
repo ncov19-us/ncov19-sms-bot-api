@@ -72,20 +72,12 @@ const countiesPerState = {
 router.post("/web", (req, res) => {
   // getting postal code from web app request
   const postalCode = req.body.zip;
-  const phonenumber = req.body.phonenumber.replace(/[,.-]/g, "");
+  const phonenumber = req.body.phone.replace(/[,.-]/g, "");
 
   console.log(phonenumber);
 
+  // instantiating county and state vars
   let county, state;
-
-  client.messages
-    .create({
-      body: messageBody,
-      from: "+18133950040",
-      to: `+1${phonenumber}`
-    })
-    .then(message => console.log("test", message))
-    .catch(err => console.log(err));
 
   axios
     .get(
@@ -97,6 +89,7 @@ router.post("/web", (req, res) => {
       );
       // console.log("FORMATED ADDRESS ARRAY", formatedAddressArray);
       state = formatedAddressArray[1].split(" ")[1];
+      // console.log(state)
       const countyArray = formatedAddressArray[0].split(" ");
       countyArray.pop();
       county = countyArray.join(" ");
@@ -107,14 +100,89 @@ router.post("/web", (req, res) => {
         county: county
       };
 
-      console.log("post options", postOptions);
+      // console.log("post options", postOptions);
+      let countyInfo, stateInfo;
 
-      let stateInfo = {};
       axios
         .post(`${process.env.DASHBOARD_API_URL}/county`, postOptions)
         .then(res => {
+          console.log(res.data.message);
           countyInfo = { ...res.data.message[0] };
-          console.log(countyInfo);
+
+          // post request to build comparisons to state averages to send to user
+          axios
+            .post(`${process.env.DASHBOARD_API_URL}/stats`, { state: state })
+            .then(res => {
+              let numOfCounties = countiesPerState[state];
+              console.log(res.data.message);
+              // let [ tested, todays_tested, confirmed, todays_confirmed, deaths, todays_deaths ] = res.data.message;
+              console.log(res.data.message.todays_confirmed);
+              let newCaseIncrease =
+                countyInfo.new /
+                (res.data.message.todays_confirmed / numOfCounties);
+              let totalCaseIncrease =
+                countyInfo.confirmed /
+                (res.data.message.confirmed / numOfCounties);
+              let newDeathIncrease =
+                countyInfo.new_death /
+                (res.data.message.todays_deaths / numOfCounties);
+              let totalDeathIncrease =
+                countyInfo.death / (res.data.message.deaths / numOfCounties);
+
+              console.log("new", newCaseIncrease);
+              // let fatalityRateIncrease = countyInfo.fatality_rate / s
+
+              function upOrDown(num) {
+                let arrow;
+
+                if (num > 0) {
+                  arrow = "\u2B06";
+                  console.log("up");
+                  return arrow;
+                } else if (num === 0) {
+                  arrow = "";
+                  console.log("none");
+                  return arrow;
+                } else {
+                  arrow = "\u2B07";
+                  console.log("down");
+                  return arrow;
+                }
+              }
+
+              const countyMessageBody = `
+${countyInfo.county_name} County, ${countyInfo.state_name}
+
+Cases Today: ${countyInfo.new} (${upOrDown(
+                newCaseIncrease
+              )} ${newCaseIncrease.toFixed(2)}% from state avg.)
+Total Cases: ${countyInfo.confirmed} (${upOrDown(
+                totalCaseIncrease
+              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+Deaths Today: ${countyInfo.new_death} (${upOrDown(
+                newDeathIncrease
+              )} ${newDeathIncrease.toFixed(2)}% from state avg.)
+Total Deaths: ${countyInfo.death} (${upOrDown(
+                totalCaseIncrease
+              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+Fatality Rate: ${countyInfo.fatality_rate}
+            `;
+
+              // console.log(stateArr);
+              client.messages
+                .create({
+                  body: countyMessageBody,
+                  from: "+18133950040",
+                  to: `${phonenumber}`
+                })
+                .then(message => console.log("test", message))
+                .catch(err => console.log(err));
+            })
+            .catch(err => {
+              console.log(err);
+            });
+
+          // const stateMessageBody = `
           // ${postOptions.state}
           // ${postOptions.county} County
           // Confirmed cases today: ${stateInfo.todays_confirmed}
@@ -123,23 +191,13 @@ router.post("/web", (req, res) => {
           // Total tested: ${stateInfo.tested}
           // Today's deaths: ${stateInfo.todays_deaths}
           // Total deaths: ${stateInfo.deaths}
-          // res.writeHead(200, { "Content-Type": "text/xml" });
-          // res.end(twiml.toString());
-
-          client.messages
-            .create({
-              body: "Success 🤮",
-              from: "+18133950040",
-              to: `${phonenumber}`
-            })
-            .then(message => console.log("test", message))
-            .catch(err => console.log(err));
+          // `
         })
         .catch(err => {
           console.log(err);
           client.messages
             .create({
-              body: "There was a problem on our end",
+              body: "There was a problem on us",
               from: "+18133950040",
               to: `${phonenumber}`
             })
@@ -153,7 +211,7 @@ router.post("/web", (req, res) => {
         .create({
           body: "Please use a 5 digit zip code.",
           from: "+18133950040",
-          to: `${req.body.phonenumber}`
+          to: `${phonenumber}`
         })
         .then(message => console.log("test", message))
         .catch(err => console.log(err));
