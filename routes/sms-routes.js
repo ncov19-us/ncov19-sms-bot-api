@@ -71,11 +71,11 @@ const countiesPerState = {
 router.post("/web", (req, res) => {
   // getting postal code from web app request
   console.log(req.body)
-  const postalCode = req.body.zip;
+  const postalCode = parseInt(req.body.zip);
   const phonenumber = req.body.phone.replace(/[,.-]/g, "");
 
-  // console.log(phonenumber);
-  if(postalCode.toString().length !== 5 || postalCode.isInteger() === false) {
+  if(postalCode.toString().length !== 5 || Number.isInteger(postalCode) === false) {
+    // console.log('check')
     client.messages
     .create({
       body: "Please use a 5 digit zip code.",
@@ -84,6 +84,8 @@ router.post("/web", (req, res) => {
     })
     .then(message => console.log("test", message))
     .catch(err => console.log(err));
+
+    return
   }
   // instantiating county and state vars
   let county, state;
