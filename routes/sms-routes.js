@@ -89,7 +89,7 @@ router.post("/web", cors(), (req, res) => {
       const formatedAddressArray = res.data.results[0].formatted_address.split(
         ","
       );
-      // console.log("FORMATED ADDRESS ARRAY", formatedAddressArray);
+      console.log("FORMATED ADDRESS ARRAY", formatedAddressArray);
       state = formatedAddressArray[1].split(" ")[1];
       // console.log(state)
       const countyArray = formatedAddressArray[0].split(" ");
@@ -102,7 +102,7 @@ router.post("/web", cors(), (req, res) => {
         county: county
       };
 
-      // console.log("post options", postOptions);
+      console.log("post options", postOptions);
       let countyInfo, stateInfo;
 
       axios
@@ -116,60 +116,46 @@ router.post("/web", cors(), (req, res) => {
             .post(`${process.env.DASHBOARD_API_URL}/stats`, { state: state })
             .then(res => {
               let numOfCounties = countiesPerState[state];
-              // console.log(res.data.message);
-              // let [ tested, todays_tested, confirmed, todays_confirmed, deaths, todays_deaths ] = res.data.message;
-              // console.log(res.data.message.todays_confirmed);
-              let newCaseIncrease =
-                countyInfo.new /
-                (res.data.message.todays_confirmed / numOfCounties);
-              let totalCaseIncrease =
-                countyInfo.confirmed /
-                (res.data.message.confirmed / numOfCounties);
-              let newDeathIncrease =
-                countyInfo.new_death /
-                (res.data.message.todays_deaths / numOfCounties);
-              let totalDeathIncrease =
-                countyInfo.death / (res.data.message.deaths / numOfCounties);
-
-              console.log("new", newCaseIncrease);
-              // let fatalityRateIncrease = countyInfo.fatality_rate / s
+              
+              let newCaseIncrease = countyInfo.new / (res.data.message.todays_confirmed / numOfCounties);
+              let totalCaseIncrease = countyInfo.confirmed / (res.data.message.confirmed / numOfCounties);
+              let newDeathIncrease = countyInfo.new_death / (res.data.message.todays_deaths / numOfCounties);
+              
+              if(isNaN(newCaseIncrease)) {
+                newCaseIncrease = 0;
+              } else if (isNaN(totalCaseIncrease)) {
+                totalCaseIncrease = 0;
+              } else if (isNaN(newDeathIncrease)) {
+                newDeathIncrease = 0;
+              }
 
               function upOrDown(num) {
                 let arrow;
 
                 if (num > 0) {
                   arrow = "\u2B06";
-                  // console.log("up");
+
                   return arrow;
                 } else if (num === 0) {
-                  arrow = "";
-                  // console.log("none");
+                  arrow = "\u2B06";
+
                   return arrow;
                 } else {
                   arrow = "\u2B07";
-                  // console.log("down");
+
                   return arrow;
                 }
               }
-
+              console.log('new case increase', newCaseIncrease)
               const countyMessageBody = `
 ${countyInfo.county_name} County, ${countyInfo.state_name}
 
-Cases Today: ${countyInfo.new} (${upOrDown(
-                newCaseIncrease
-              )} ${newCaseIncrease.toFixed(2)}% from state avg.)
-Total Cases: ${countyInfo.confirmed} (${upOrDown(
-                totalCaseIncrease
-              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-Deaths Today: ${countyInfo.new_death} (${upOrDown(
-                newDeathIncrease
-              )} ${newDeathIncrease.toFixed(2)}% from state avg.)
-Total Deaths: ${countyInfo.death} (${upOrDown(
-                totalCaseIncrease
-              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+Cases Today: ${countyInfo.new} (${upOrDown(newCaseIncrease)} ${newCaseIncrease.toFixed(2)}% from state avg.)
+Total Cases: ${countyInfo.confirmed} (${upOrDown(totalCaseIncrease)} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+Deaths Today: ${countyInfo.new_death} (${upOrDown(newDeathIncrease)} ${newDeathIncrease.toFixed(2)}% from state avg.)
+Total Deaths: ${countyInfo.death} (${upOrDown(totalCaseIncrease)} ${totalCaseIncrease.toFixed(2)}% from state avg.)
 Fatality Rate: ${countyInfo.fatality_rate}
             `;
-              res.status(201)
               client.messages
                 .create({
                   body: countyMessageBody,
@@ -178,23 +164,10 @@ Fatality Rate: ${countyInfo.fatality_rate}
                 })
                 .then(message => console.log(message))
                 .catch(err => console.log(err));
-
-                // console.log('res', res)
             })
             .catch(err => {
-              // res.status(500).json({ error: err })
+              console.log(err)
             });
-
-          // const stateMessageBody = `
-          // ${postOptions.state}
-          // ${postOptions.county} County
-          // Confirmed cases today: ${stateInfo.todays_confirmed}
-          // Total confirmed cases: ${stateInfo.confirmed}
-          // Tested today: ${stateInfo.todays_tested}
-          // Total tested: ${stateInfo.tested}
-          // Today's deaths: ${stateInfo.todays_deaths}
-          // Total deaths: ${stateInfo.deaths}
-          // `
         })
         .catch(err => {
           console.log(err);
@@ -207,7 +180,6 @@ Fatality Rate: ${countyInfo.fatality_rate}
             .then(message => console.log("test", message))
             .catch(err => console.log(err));
         });
-      // res.status(201)
     })
     .catch(err => {
       console.log(err)
@@ -221,13 +193,11 @@ Fatality Rate: ${countyInfo.fatality_rate}
         .then(message => console.log("test", message))
         .catch(err => console.log(err));
     });
-    // console.log('check',res.status(201))
 });
 
 // endpoint for users who prompt app via SMS
 router.post("/", (req, res) => {
   const postalCode = req.body.Body;
-  // console.log("req.body", req.body);
 
   // instantiating county and state vars
   let county, state;
