@@ -1,4 +1,3 @@
-let test;
+let number = "12g45"
 
-console.log(test.length())
-
+console.log(parseInt(number));

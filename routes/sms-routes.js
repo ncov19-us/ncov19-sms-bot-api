@@ -3,7 +3,6 @@ const axios = require("axios");
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
-const cors = require('cors')
 // authenticated twilio import
 const client = require("twilio")(
   process.env.ACCOUNT_SID,
@@ -69,14 +68,23 @@ const countiesPerState = {
 // -- POST Routes --
 
 // endpoint for users who prompt app via web app
-router.post("/web", cors(), (req, res) => {
+router.post("/web", (req, res) => {
   // getting postal code from web app request
   console.log(req.body)
   const postalCode = req.body.zip;
   const phonenumber = req.body.phone.replace(/[,.-]/g, "");
 
   // console.log(phonenumber);
-
+  if(postalCode.toString().length !== 5 || postalCode.isInteger() === false) {
+    client.messages
+    .create({
+      body: "Please use a 5 digit zip code.",
+      from: "+18133950040",
+      to: `${req.body.From}`
+    })
+    .then(message => console.log("test", message))
+    .catch(err => console.log(err));
+  }
   // instantiating county and state vars
   let county, state;
 
@@ -197,7 +205,24 @@ Fatality Rate: ${countyInfo.fatality_rate}
 
 // endpoint for users who prompt app via SMS
 router.post("/", (req, res) => {
-  const postalCode = req.body.Body;
+  const postalCode = parseInt(req.body.Body);
+
+  // console.log(phonenumber);
+  // console.log(typeof postalCode)
+  // console.log(postalCode.toString().length !== 5)
+  if(postalCode.toString().length !== 5 || Number.isInteger(postalCode) === false) {
+    // console.log('check')
+    client.messages
+    .create({
+      body: "Please use a 5 digit zip code.",
+      from: "+18133950040",
+      to: `${req.body.From}`
+    })
+    .then(message => console.log("test", message))
+    .catch(err => console.log(err));
+
+    return
+  }
 
   // instantiating county and state vars
   let county, state;
@@ -237,59 +262,66 @@ router.post("/", (req, res) => {
             .post(`${process.env.DASHBOARD_API_URL}/stats`, { state: state })
             .then(res => {
               let numOfCounties = countiesPerState[state];
-              // console.log(res.data.message);
-              // let [ tested, todays_tested, confirmed, todays_confirmed, deaths, todays_deaths ] = res.data.message;
-              // console.log(res.data.message.todays_confirmed);
+              console.log('county', countyInfo)
+              console.log('state', res.data.message)
               let newCaseIncrease =
-                countyInfo.new /
-                (res.data.message.todays_confirmed / numOfCounties);
+                (countyInfo.new - (res.data.message.todays_confirmed / numOfCounties)) / (countyInfo.new * 100)
+                // countyInfo.new /
+                // (res.data.message.todays_confirmed / numOfCounties);
               let totalCaseIncrease =
-                countyInfo.confirmed /
-                (res.data.message.confirmed / numOfCounties);
+                (countyInfo.confirmed - (res.data.message.confirmed / numOfCounties)) / (countyInfo.confirmed * 100)
+                // countyInfo.confirmed /
+                // (res.data.message.confirmed / numOfCounties);
               let newDeathIncrease =
-                countyInfo.new_death /
-                (res.data.message.todays_deaths / numOfCounties);
+                (countyInfo.new_death - (res.data.message.todays_deaths / numOfCounties)) / (countyInfo.new_death * 100)
+                // countyInfo.new_death /
+                // (res.data.message.todays_deaths / numOfCounties);
               let totalDeathIncrease =
-                countyInfo.death / (res.data.message.deaths / numOfCounties);
+                (countyInfo.death - (res.data.message.deaths / numOfCounties)) / (countyInfo.death * 100)
+                // countyInfo.death / (res.data.message.deaths / numOfCounties);
 
-              // console.log("new", newCaseIncrease);
-              // let fatalityRateIncrease = countyInfo.fatality_rate / s
-
-              function upOrDown(num) {
-                let arrow;
-
-                if (num > 0) {
-                  arrow = "\u2B06";
-                  // console.log("up");
-                  return arrow;
-                } else if (num === 0) {
-                  arrow = "";
-                  // console.log("none");
-                  return arrow;
-                } else {
-                  arrow = "\u2B07";
-                  // console.log("down");
-                  return arrow;
+                if(isNaN(newCaseIncrease)) {
+                  newCaseIncrease = 0;
+                } else if (isNaN(totalCaseIncrease)) {
+                  totalCaseIncrease = 0;
+                } else if (isNaN(newDeathIncrease)) {
+                  newDeathIncrease = 0;
                 }
-              }
+  
+                function upOrDown(num) {
+                  let arrow;
+                  console.log(num)
+  
+                  if (num > 0) {
+                    arrow = "\u2B06";
+  
+                    return arrow;
+                  } else if (num === 0) {
+                    arrow = "\u2B06";
+  
+                    return arrow;
+                  } else if (num < 0) {
+                    arrow = "\u2B07";
+  
+                    return arrow;
+                  }
+                }
+                console.log('new case increase', newCaseIncrease)
+                // (${upOrDown(newCaseIncrease)} ${newCaseIncrease.toFixed(2)}% from state avg.)
+                // Total Cases: ${countyInfo.confirmed} (${upOrDown(totalCaseIncrease)} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+                // Deaths Today: ${countyInfo.new_death} (${upOrDown(newDeathIncrease)} ${newDeathIncrease.toFixed(2)}% from state avg.)
+                // Total Deaths: ${countyInfo.death} (${upOrDown(totalDeathIncrease)} ${totalDeathIncrease.toFixed(2)}% from state avg.)
+                const countyMessageBody = `
+  ${countyInfo.county_name} County, ${countyInfo.state_name}
+  
+  Cases Today: ${countyInfo.new === 0 ? 0 : countyInfo.new + " (" + upOrDown(newCaseIncrease) + " " + newCaseIncrease.toFixed(2) + "% from state avg.)"}
+  Total Cases: ${countyInfo.confirmed === 0 ? 0 : countyInfo.confirmed + " (" + upOrDown(totalCaseIncrease) + " " + totalCaseIncrease.toFixed(2) + "% from state avg.)"}
+  Deaths Today: ${countyInfo.new_death === 0 ? 0 : countyInfo.new_death + " (" + upOrDown(newDeathIncrease) + " " + newDeathIncrease.toFixed(2) + "% from state avg.)"}
+  Total Deaths: ${countyInfo.death === 0 ? 0 : countyInfo.death + " (" + upOrDown(totalDeathIncrease) + " " + totalDeathIncrease.toFixed(2) + "% from state avg.)"}
+  Fatality Rate: ${countyInfo.fatality_rate}
 
-              const countyMessageBody = `
-${countyInfo.county_name} County, ${countyInfo.state_name}
-
-Cases Today: ${countyInfo.new} (${upOrDown(
-                newCaseIncrease
-              )} ${newCaseIncrease.toFixed(2)}% from state avg.)
-Total Cases: ${countyInfo.confirmed} (${upOrDown(
-                totalCaseIncrease
-              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-Deaths Today: ${countyInfo.new_death} (${upOrDown(
-                newDeathIncrease
-              )} ${newDeathIncrease.toFixed(2)}% from state avg.)
-Total Deaths: ${countyInfo.death} (${upOrDown(
-                totalCaseIncrease
-              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-Fatality Rate: ${countyInfo.fatality_rate}
-            `;
+  For more in-depth info: https://ncov19.us/
+              `;
 
               // console.log(stateArr);
               client.messages
@@ -298,23 +330,12 @@ Fatality Rate: ${countyInfo.fatality_rate}
                   from: "+18133950040",
                   to: `${req.body.From}`
                 })
-                .then(message => console.log("test", message))
+                .then(message => console.log(message))
                 .catch(err => console.log(err));
             })
             .catch(err => {
               console.log(err);
             });
-
-          // const stateMessageBody = `
-          // ${postOptions.state}
-          // ${postOptions.county} County
-          // Confirmed cases today: ${stateInfo.todays_confirmed}
-          // Total confirmed cases: ${stateInfo.confirmed}
-          // Tested today: ${stateInfo.todays_tested}
-          // Total tested: ${stateInfo.tested}
-          // Today's deaths: ${stateInfo.todays_deaths}
-          // Total deaths: ${stateInfo.deaths}
-          // `
         })
         .catch(err => {
           console.log(err);
@@ -331,14 +352,14 @@ Fatality Rate: ${countyInfo.fatality_rate}
     })
     .catch(err => {
       // setting inital message in case of failure, request header contents
-      client.messages
-        .create({
-          body: "Please use a 5 digit zip code.",
-          from: "+18133950040",
-          to: `${req.body.From}`
-        })
-        .then(message => console.log("test", message))
-        .catch(err => console.log(err));
+      // client.messages
+      //   .create({
+      //     body: "Please use a 5 digit zip code.",
+      //     from: "+18133950040",
+      //     to: `${req.body.From}`
+      //   })
+      //   .then(message => console.log("test", message))
+      //   .catch(err => console.log(err));
     });
 });
 
