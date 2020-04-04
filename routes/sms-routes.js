@@ -3,7 +3,7 @@ const axios = require("axios");
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
-
+const cors = require('cors')
 // authenticated twilio import
 const client = require("twilio")(
   process.env.ACCOUNT_SID,
@@ -69,12 +69,13 @@ const countiesPerState = {
 // -- POST Routes --
 
 // endpoint for users who prompt app via web app
-router.post("/web", (req, res) => {
+router.post("/web", cors(), (req, res) => {
   // getting postal code from web app request
+  console.log(req.body)
   const postalCode = req.body.zip;
   const phonenumber = req.body.phone.replace(/[,.-]/g, "");
 
-  console.log(phonenumber);
+  // console.log(phonenumber);
 
   // instantiating county and state vars
   let county, state;
@@ -84,6 +85,7 @@ router.post("/web", (req, res) => {
       `https://api.opencagedata.com/geocode/v1/google-v3-json?q=countrycode=us|postcode=${postalCode}&key=${process.env.GEOCODING_KEY}&limit=1`
     )
     .then(res => {
+      // console.log(res.status(201)))
       const formatedAddressArray = res.data.results[0].formatted_address.split(
         ","
       );
@@ -106,7 +108,7 @@ router.post("/web", (req, res) => {
       axios
         .post(`${process.env.DASHBOARD_API_URL}/county`, postOptions)
         .then(res => {
-          console.log(res.data.message);
+          // console.log(res.data.message);
           countyInfo = { ...res.data.message[0] };
 
           // post request to build comparisons to state averages to send to user
@@ -114,9 +116,9 @@ router.post("/web", (req, res) => {
             .post(`${process.env.DASHBOARD_API_URL}/stats`, { state: state })
             .then(res => {
               let numOfCounties = countiesPerState[state];
-              console.log(res.data.message);
+              // console.log(res.data.message);
               // let [ tested, todays_tested, confirmed, todays_confirmed, deaths, todays_deaths ] = res.data.message;
-              console.log(res.data.message.todays_confirmed);
+              // console.log(res.data.message.todays_confirmed);
               let newCaseIncrease =
                 countyInfo.new /
                 (res.data.message.todays_confirmed / numOfCounties);
@@ -137,15 +139,15 @@ router.post("/web", (req, res) => {
 
                 if (num > 0) {
                   arrow = "\u2B06";
-                  console.log("up");
+                  // console.log("up");
                   return arrow;
                 } else if (num === 0) {
                   arrow = "";
-                  console.log("none");
+                  // console.log("none");
                   return arrow;
                 } else {
                   arrow = "\u2B07";
-                  console.log("down");
+                  // console.log("down");
                   return arrow;
                 }
               }
@@ -167,19 +169,20 @@ Total Deaths: ${countyInfo.death} (${upOrDown(
               )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
 Fatality Rate: ${countyInfo.fatality_rate}
             `;
-
-              // console.log(stateArr);
+              res.status(201)
               client.messages
                 .create({
                   body: countyMessageBody,
                   from: "+18133950040",
                   to: `${phonenumber}`
                 })
-                .then(message => console.log("test", message))
+                .then(message => console.log(message))
                 .catch(err => console.log(err));
+
+                // console.log('res', res)
             })
             .catch(err => {
-              console.log(err);
+              // res.status(500).json({ error: err })
             });
 
           // const stateMessageBody = `
@@ -204,9 +207,11 @@ Fatality Rate: ${countyInfo.fatality_rate}
             .then(message => console.log("test", message))
             .catch(err => console.log(err));
         });
+      // res.status(201)
     })
     .catch(err => {
-      // setting inital message in case of failure, request header contents
+      console.log(err)
+      res.status(500)
       client.messages
         .create({
           body: "Please use a 5 digit zip code.",
@@ -216,6 +221,7 @@ Fatality Rate: ${countyInfo.fatality_rate}
         .then(message => console.log("test", message))
         .catch(err => console.log(err));
     });
+    // console.log('check',res.status(201))
 });
 
 // endpoint for users who prompt app via SMS
@@ -253,7 +259,7 @@ router.post("/", (req, res) => {
       axios
         .post(`${process.env.DASHBOARD_API_URL}/county`, postOptions)
         .then(res => {
-          console.log(res.data.message);
+          // console.log(res.data.message);
           countyInfo = { ...res.data.message[0] };
 
           // post request to build comparisons to state averages to send to user
@@ -261,9 +267,9 @@ router.post("/", (req, res) => {
             .post(`${process.env.DASHBOARD_API_URL}/stats`, { state: state })
             .then(res => {
               let numOfCounties = countiesPerState[state];
-              console.log(res.data.message);
+              // console.log(res.data.message);
               // let [ tested, todays_tested, confirmed, todays_confirmed, deaths, todays_deaths ] = res.data.message;
-              console.log(res.data.message.todays_confirmed);
+              // console.log(res.data.message.todays_confirmed);
               let newCaseIncrease =
                 countyInfo.new /
                 (res.data.message.todays_confirmed / numOfCounties);
@@ -276,7 +282,7 @@ router.post("/", (req, res) => {
               let totalDeathIncrease =
                 countyInfo.death / (res.data.message.deaths / numOfCounties);
 
-              console.log("new", newCaseIncrease);
+              // console.log("new", newCaseIncrease);
               // let fatalityRateIncrease = countyInfo.fatality_rate / s
 
               function upOrDown(num) {
@@ -284,15 +290,15 @@ router.post("/", (req, res) => {
 
                 if (num > 0) {
                   arrow = "\u2B06";
-                  console.log("up");
+                  // console.log("up");
                   return arrow;
                 } else if (num === 0) {
                   arrow = "";
-                  console.log("none");
+                  // console.log("none");
                   return arrow;
                 } else {
                   arrow = "\u2B07";
-                  console.log("down");
+                  // console.log("down");
                   return arrow;
                 }
               }
@@ -351,6 +357,7 @@ Fatality Rate: ${countyInfo.fatality_rate}
             .then(message => console.log("test", message))
             .catch(err => console.log(err));
         });
+        res.status(201).json({ test: 'check'})
     })
     .catch(err => {
       // setting inital message in case of failure, request header contents
