@@ -33,6 +33,10 @@ Staging Base URL: https://ncov19-sms-bot-api-staging.herokuapp.com/
 
 ## Routes
 
+| Method | Endpoint | Access Control | Description                                              |
+| ------ | -------- | -------------- | -------------------------------------------------------- |
+| POST   | `/sms`   | all users      | Returns the county and state information for a zip code. |
+
 ### Base URL
 
 ## Testing
