@@ -78,6 +78,10 @@ const countiesPerState = {
 
 // ======== Routes =========
 
+router.post('/', (req, res) => {
+  res.status(201).json({message: "nice"})
+})
+
 // -- POST Routes --
 
 // endpoint for users who prompt app via web app
@@ -103,16 +107,15 @@ router.post("/web", (req, res) => {
     return;
   }
   console.log(`+1${phonenumber}`);
-
+  res.status(201).json({message: "success"})
+  // res.status(201).json({message: "nice"})
   client.verify
     .services(process.env.VERIFY_SERVICE_SID)
-    .verifications.create({
-      rateLimits: {
-        end_user_phone_number: phonenumber,
-      },
-      to: `+1${phonenumber}`,
-      channel: "sms",
-    })
+    .verifications(`${phonenumber}`)
+    .update({ status: "approved" })
+    // .create({rateLimits: {
+    //   end_user_phone_number: phonenumber
+    // }, to: `+1${phonenumber}`, channel: 'sms'})
     .then((verification) => {
       console.log(verification);
       // instantiating county and state vars
@@ -258,6 +261,8 @@ router.post("/web", (req, res) => {
         })
         .then((message) => console.log(message))
         .catch((err) => console.log(err));
+
+        console.log('test')
     });
 });
 
