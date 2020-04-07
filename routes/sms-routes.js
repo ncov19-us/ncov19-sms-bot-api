@@ -97,7 +97,12 @@ router.post("/web", (req, res) => {
   ) {
     client.messages
       .create({
-        body: "Please use a 5 digit zip code.",
+        body: 
+        `
+        Please use a 5 digit zip code.
+
+        Check out our online dashboard: https://ncov19.us
+        `,
         from: "+18133950040",
         to: `${req.body.From}`,
       })
@@ -109,15 +114,15 @@ router.post("/web", (req, res) => {
   console.log(`+1${phonenumber}`);
   res.status(201).json({message: "success"})
   // res.status(201).json({message: "nice"})
-  client.verify
-    .services(process.env.VERIFY_SERVICE_SID)
-    .verifications(`${phonenumber}`)
-    .update({ status: "approved" })
-    // .create({rateLimits: {
-    //   end_user_phone_number: phonenumber
-    // }, to: `+1${phonenumber}`, channel: 'sms'})
-    .then((verification) => {
-      console.log(verification);
+  // client.verify
+  //   .services(process.env.VERIFY_SERVICE_SID)
+  //   .verifications(`${phonenumber}`)
+  //   .update({ status: "approved" })
+  //   // .create({rateLimits: {
+  //   //   end_user_phone_number: phonenumber
+  //   // }, to: `+1${phonenumber}`, channel: 'sms'})
+  //   .then((verification) => {
+  //     console.log(verification);
       // instantiating county and state vars
       let county, state;
 
@@ -197,21 +202,21 @@ router.post("/web", (req, res) => {
                   }
                   console.log("new case increase", newCaseIncrease);
                   const countyMessageBody = `
-        ${countyInfo.county_name} County, ${countyInfo.state_name}
+${countyInfo.county_name} County, ${countyInfo.state_name}
 
-        Cases Today: ${countyInfo.new} (${upOrDown(
-                    newCaseIncrease
-                  )} ${newCaseIncrease.toFixed(2)}% from state avg.)
-        Total Cases: ${countyInfo.confirmed} (${upOrDown(
-                    totalCaseIncrease
-                  )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-        Deaths Today: ${countyInfo.new_death} (${upOrDown(
-                    newDeathIncrease
-                  )} ${newDeathIncrease.toFixed(2)}% from state avg.)
-        Total Deaths: ${countyInfo.death} (${upOrDown(
-                    totalCaseIncrease
-                  )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-        Fatality Rate: ${countyInfo.fatality_rate}
+Cases Today: ${countyInfo.new} (${upOrDown(
+            newCaseIncrease
+          )} ${newCaseIncrease.toFixed(2)}% from state avg.)
+Total Cases: ${countyInfo.confirmed} (${upOrDown(
+            totalCaseIncrease
+          )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+Deaths Today: ${countyInfo.new_death} (${upOrDown(
+            newDeathIncrease
+          )} ${newDeathIncrease.toFixed(2)}% from state avg.)
+Total Deaths: ${countyInfo.death} (${upOrDown(
+            totalCaseIncrease
+          )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+Fatality Rate: ${countyInfo.fatality_rate}
                     `;
                   client.messages
                     .create({
@@ -230,7 +235,12 @@ router.post("/web", (req, res) => {
               console.log(err);
               client.messages
                 .create({
-                  body: "There was a problem on us",
+                  body: 
+                  `
+There was a problem on our end.  Please try again later!
+
+Check out our online dashboard: https://ncov19.us
+                  `,
                   from: "+18133950040",
                   to: `+1${phonenumber}`,
                 })
@@ -243,7 +253,12 @@ router.post("/web", (req, res) => {
           res.status(500);
           client.messages
             .create({
-              body: "Please use a 5 digit zip code.",
+              body: 
+              `
+Please use a 5 digit zip code.
+
+Check out our online dashboard: https://ncov19.us
+              `,
               from: "+18133950040",
               to: `+1${phonenumber}`,
             })
@@ -251,20 +266,24 @@ router.post("/web", (req, res) => {
             .catch((err) => console.log(err));
         });
     })
-    .catch((err) => {
-      client.messages
-        .create({
-          body:
-            "You have used all of your requests for today.  Check out our online dashboard: https://ncov19.us",
-          from: "+18133950040",
-          to: `+1${phonenumber}`,
-        })
-        .then((message) => console.log(message))
-        .catch((err) => console.log(err));
+//     .catch((err) => {
+//       client.messages
+//         .create({
+//           body:
+//             `
+// You have used all of your requests for today.  
 
-        console.log('test')
-    });
-});
+// Check out our online dashboard: https://ncov19.us
+//             `,
+//           from: "+18133950040",
+//           to: `+1${phonenumber}`,
+//         })
+//         .then((message) => console.log(message))
+//         .catch((err) => console.log(err));
+
+//         console.log('test')
+//     });
+// // });
 
 // endpoint for users who prompt app via SMS
 router.post("/", (req, res) => {
@@ -380,21 +399,21 @@ router.post("/", (req, res) => {
                   }
                   console.log("new case increase", newCaseIncrease);
                   const countyMessageBody = `
-        ${countyInfo.county_name} County, ${countyInfo.state_name}
+${countyInfo.county_name} County, ${countyInfo.state_name}
 
-        Cases Today: ${countyInfo.new} (${upOrDown(
-                    newCaseIncrease
-                  )} ${newCaseIncrease.toFixed(2)}% from state avg.)
-        Total Cases: ${countyInfo.confirmed} (${upOrDown(
-                    totalCaseIncrease
-                  )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-        Deaths Today: ${countyInfo.new_death} (${upOrDown(
-                    newDeathIncrease
-                  )} ${newDeathIncrease.toFixed(2)}% from state avg.)
-        Total Deaths: ${countyInfo.death} (${upOrDown(
-                    totalCaseIncrease
-                  )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-        Fatality Rate: ${countyInfo.fatality_rate}
+Cases Today: ${countyInfo.new} (${upOrDown(
+            newCaseIncrease
+          )} ${newCaseIncrease.toFixed(2)}% from state avg.)
+Total Cases: ${countyInfo.confirmed} (${upOrDown(
+            totalCaseIncrease
+          )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+Deaths Today: ${countyInfo.new_death} (${upOrDown(
+            newDeathIncrease
+          )} ${newDeathIncrease.toFixed(2)}% from state avg.)
+Total Deaths: ${countyInfo.death} (${upOrDown(
+            totalCaseIncrease
+          )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
+Fatality Rate: ${countyInfo.fatality_rate}
                     `;
                   client.messages
                     .create({
@@ -413,7 +432,12 @@ router.post("/", (req, res) => {
               console.log(err);
               client.messages
                 .create({
-                  body: "There was a problem on us",
+                  body: 
+                  `
+There was a problem on our end.  Please try again later!
+
+Check out our online dashboard: https://ncov19.us
+                  `,
                   from: "+18133950040",
                   to: `${phonenumber}`,
                 })
@@ -426,7 +450,12 @@ router.post("/", (req, res) => {
           res.status(500);
           client.messages
             .create({
-              body: "Please use a 5 digit zip code.",
+              body: 
+              `
+Please use a 5 digit zip code.
+
+Check out our online dashboard: https://ncov19.us
+              `,
               from: "+18133950040",
               to: `${phonenumber}`,
             })
@@ -438,7 +467,11 @@ router.post("/", (req, res) => {
       client.messages
         .create({
           body:
-            "You have used all of your requests for today.  Check out our online dashboard: https://ncov19.us",
+            `
+You have used all of your requests for today.  
+
+Check out our online dashboard: https://ncov19.us
+            `,
           from: "+18133950040",
           to: `${phonenumber}`,
         })
