@@ -310,15 +310,15 @@ router.post("/", (req, res) => {
     return;
   }
 
-  client.verify
-    .services(process.env.VERIFY_SERVICE_SID)
-    .verifications(`${phonenumber}`)
-    .update({ status: "approved" })
-    // .create({rateLimits: {
-    //   end_user_phone_number: phonenumber
-    // }, to: `+1${phonenumber}`, channel: 'sms'})
-    .then((verification) => {
-      console.log(verification);
+  // client.verify
+  //   .services(process.env.VERIFY_SERVICE_SID)
+  //   .verifications(`${phonenumber}`)
+  //   .update({ status: "approved" })
+  //   // .create({rateLimits: {
+  //   //   end_user_phone_number: phonenumber
+  //   // }, to: `+1${phonenumber}`, channel: 'sms'})
+  //   .then((verification) => {
+  //     console.log(verification);
 
       // instantiating county and state vars
       let county, state;
@@ -463,21 +463,21 @@ Check out our online dashboard: https://ncov19.us
             .catch((err) => console.log(err));
         });
     })
-    .catch((err) => {
-      client.messages
-        .create({
-          body:
-            `
-You have used all of your requests for today.  
+//     .catch((err) => {
+//       client.messages
+//         .create({
+//           body:
+//             `
+// You have used all of your requests for today.  
 
-Check out our online dashboard: https://ncov19.us
-            `,
-          from: "+18133950040",
-          to: `${phonenumber}`,
-        })
-        .then((message) => console.log(message))
-        .catch((err) => console.log(err));
-    });
-});
+// Check out our online dashboard: https://ncov19.us
+//             `,
+//           from: "+18133950040",
+//           to: `${phonenumber}`,
+//         })
+//         .then((message) => console.log(message))
+//         .catch((err) => console.log(err));
+//     });
+// });
 
 module.exports = router;
