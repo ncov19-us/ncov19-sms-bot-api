@@ -78,10 +78,6 @@ const countiesPerState = {
 
 // ======== Routes =========
 
-router.post('/', (req, res) => {
-  res.status(201).json({message: "nice"})
-})
-
 // -- POST Routes --
 
 // endpoint for users who prompt app via web app
