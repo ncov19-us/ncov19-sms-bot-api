@@ -10,11 +10,7 @@ const countiesPerState = require('./countiesPerState.js');
 const generateSMS = require('./generateSMS.js');
 
 // function makes a post request to the main dashboard API to query and return COVID-19 info based on location data provided by user
-async function getCovidDataFromLocationInfo(postOptions, toPhoneNumber) {
-  // doing a check to make sure the "state" field is a valid state inside the USA
-  if (!countiesPerState[postOptions.state]) {
-    generateSMS("NOT_USA", toPhoneNumber)
-  }
+async function getCovidDataFromLocationInfo(postOptions) {
   // main POST request to dashboard API
   let countyData = await axios.post(`${process.env.DASHBOARD_API_URL}/county`, postOptions);
 
