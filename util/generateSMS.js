@@ -19,15 +19,19 @@ function generateSMS(status, toPhoneNumber, countyInfo, covidData) {
 
     // still need to find a better way to format template literals besides shift + tabbing them to beginning of line
     messageBody =`
-${countyInfo.county_name} County, ${countyInfo.state_name}
+${countyInfo.county_name} County, ${countyInfo.state_name} 🇺🇸
 
-Cases Today: ${countyInfo.new} (${upOrDown(covidData.newCaseIncrease)} ${covidData.newCaseIncrease.toFixed(2)}% from state avg.)
-Total Cases: ${countyInfo.confirmed} (${upOrDown(covidData.totalCaseIncrease)} ${covidData.totalCaseIncrease.toFixed(2)}% from state avg.)
-Deaths Today: ${countyInfo.new_death} (${upOrDown(covidData.newDeathIncrease)} ${covidData.newDeathIncrease.toFixed(2)}% from state avg.)
-Total Deaths: ${countyInfo.death} (${upOrDown(covidData.totalDeathIncrease)} ${covidData.totalDeathIncrease.toFixed(2)}% from state avg.)
-Fatality Rate: ${countyInfo.fatality_rate}
+Today's Report: 
+- 🤒 Confirmed cases: ${upOrDown(covidData.newCaseIncrease)} ${countyInfo.new}
+- 💀 Deaths: ${upOrDown(covidData.newDeathIncrease)} ${countyInfo.new_death}
 
-For more info, check out our online dashboard: https://ncov19.us
+Total Report:
+- 🤒 Confirmed cases: ${upOrDown(covidData.totalCaseIncrease)} ${countyInfo.confirmed}
+- 💀 Total Deaths: ${upOrDown(covidData.totalDeathIncrease)} ${countyInfo.death}
+
+
+For more details visit COVID-19 Tracker 🌍: 
+- https://ncov19.us
                 `;
 
   } else if (status === "LIMIT_REACHED") {
@@ -35,27 +39,31 @@ For more info, check out our online dashboard: https://ncov19.us
     messageBody =`
 You have used all of your requests for today.
 
-Check out our online dashboard: https://ncov19.us
+For more deatils visit COVID-19 Tracker 🌍: 
+- https://ncov19.us
                 `
   } else if (status === "SERVER_ERROR") {
     // if there was a server error
     messageBody =`
 There was a problem on our end.  Please try again later!
 
-In the meantime, check out our online dashboard: https://ncov19.us
+In the meantime visit COVID-19 Tracker 🌍: 
+- https://ncov19.us
                 `;
   } else if (status === "BAD_INPUT") {
     // if users input was not valid
     messageBody =`
 I didn't understand that input.  Please use a 5 digit zip code.
 
-Check out our online dashboard: https://ncov19.us    
+For more deatils visit COVID-19 Tracker 🌍: 
+- https://ncov19.us
     `
   } else if (status === "NOT_USA") {
     messageBody =`
 Sorry, our SMS service doesn't currently work in countries other than the USA.
 
-In the meantime, check out our online dashboard: https://ncov19.us
+In the meantime visit COVID-19 Tracker 🌍: 
+- https://ncov19.us
     `   
   }
 

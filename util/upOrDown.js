@@ -9,11 +9,11 @@ function upOrDown(num) {
 
     return arrow;
   } else if (num === 0) {
-    arrow = "\u2B06";
+    arrow = "";
 
     return arrow;
   } else {
-    arrow = "\u2B07";
+    arrow = "";
 
     return arrow;
   }
