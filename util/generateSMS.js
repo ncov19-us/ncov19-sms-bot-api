@@ -1,3 +1,11 @@
+// library imports
+// enabling easy use of environment variables through a .env file
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config({ path: '../.env' });
+}
+// authenticated twilio import
+const client = require("twilio")(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
+
 // util function
 const upOrDown = require('./upOrDown.js');
 
@@ -8,6 +16,7 @@ function generateSMS(status, toPhoneNumber, countyInfo, covidData) {
 
   // if all these cases are true, create success message body
   if (status === "SUCCESS" && typeof countyInfo !== "undefined" && covidData !== "undefined") {
+
     // still need to find a better way to format template literals besides shift + tabbing them to beginning of line
     messageBody =`
 ${countyInfo.county_name} County, ${countyInfo.state_name}
@@ -42,13 +51,19 @@ I didn't understand that input.  Please use a 5 digit zip code.
 
 Check out our online dashboard: https://ncov19.us    
     `
+  } else if (status === "NOT_USA") {
+    messageBody =`
+Sorry, our SMS service doesn't currently work in countries other than the USA.
+
+In the meantime, check out our online dashboard: https://ncov19.us
+    `   
   }
 
   // sending appropriate message body
   client.messages
   .create({
     body: messageBody,
-    from: "+18133950040",
+    from: process.env.TWILIO_NUMBER,
     to: toPhoneNumber,
   })
   .then((message) => console.log(message))

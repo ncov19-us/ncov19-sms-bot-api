@@ -18,3 +18,5 @@ function upOrDown(num) {
     return arrow;
   }
 }
+
+module.exports = upOrDown;
