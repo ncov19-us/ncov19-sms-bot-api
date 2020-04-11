@@ -22,15 +22,15 @@ function generateSMS(status, toPhoneNumber, countyInfo, covidData) {
 ${countyInfo.county_name} County, ${countyInfo.state_name} 🇺🇸
 
 Today's Report: 
-- 🤒 Confirmed cases: ${upOrDown(covidData.newCaseIncrease)} ${countyInfo.new}
-- 💀 Deaths: ${upOrDown(covidData.newDeathIncrease)} ${countyInfo.new_death}
+- Confirmed Cases: ${upOrDown(covidData.newCaseIncrease)} ${countyInfo.new}
+- Deaths: ${upOrDown(covidData.newDeathIncrease)} ${countyInfo.new_death}
 
 Total Report:
-- 🤒 Confirmed cases: ${upOrDown(covidData.totalCaseIncrease)} ${countyInfo.confirmed}
-- 💀 Total Deaths: ${upOrDown(covidData.totalDeathIncrease)} ${countyInfo.death}
+- Total Confirmed Cases: ${upOrDown(covidData.totalCaseIncrease)} ${countyInfo.confirmed}
+- Total Deaths: ${upOrDown(covidData.totalDeathIncrease)} ${countyInfo.death}
 
 
-For more details visit COVID-19 Tracker 🌍: 
+For more details, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
                 `;
 
@@ -39,7 +39,7 @@ For more details visit COVID-19 Tracker 🌍:
     messageBody =`
 You have used all of your requests for today.
 
-For more deatils visit COVID-19 Tracker 🌍: 
+For more details, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
                 `
   } else if (status === "SERVER_ERROR") {
@@ -47,7 +47,7 @@ For more deatils visit COVID-19 Tracker 🌍:
     messageBody =`
 There was a problem on our end.  Please try again later!
 
-In the meantime visit COVID-19 Tracker 🌍: 
+In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
                 `;
   } else if (status === "BAD_INPUT") {
@@ -55,14 +55,14 @@ In the meantime visit COVID-19 Tracker 🌍:
     messageBody =`
 I didn't understand that input.  Please use a 5 digit zip code.
 
-For more deatils visit COVID-19 Tracker 🌍: 
+For more details, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
     `
   } else if (status === "NOT_USA") {
     messageBody =`
 Sorry, our SMS service doesn't currently work in countries other than the USA.
 
-In the meantime visit COVID-19 Tracker 🌍: 
+In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
     `   
   }
