@@ -22,12 +22,12 @@ function generateSMS(status, toPhoneNumber, countyInfo, covidData) {
 ${countyInfo.county_name} County, ${countyInfo.state_name} 🇺🇸
 
 Today's Report: 
-- Confirmed Cases: ${upOrDown(covidData.newCaseIncrease)} ${countyInfo.new}
-- Deaths: ${upOrDown(covidData.newDeathIncrease)} ${countyInfo.new_death}
+- Confirmed Cases: ${upOrDown(countyInfo.new)} ${countyInfo.new}
+- Deaths: ${upOrDown(countyInfo.new_death)} ${countyInfo.new_death}
 
 Total Report:
-- Total Confirmed Cases: ${upOrDown(covidData.totalCaseIncrease)} ${countyInfo.confirmed}
-- Total Deaths: ${upOrDown(covidData.totalDeathIncrease)} ${countyInfo.death}
+- Total Confirmed Cases: ${upOrDown(countyInfo.confirmed)} ${countyInfo.confirmed}
+- Total Deaths: ${upOrDown(countyInfo.death)} ${countyInfo.death}
 
 
 For more details, visit COVID-19 Tracker 🌍: 

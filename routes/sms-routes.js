@@ -37,35 +37,48 @@ router.post("/web", (req, res) => {
     generateSMS("BAD_INPUT", phoneNumber);
 
     return
-  }
+  } 
+
+  // temporary until we get rate limit fully implemented
+  (async function() {
+    // using util function to get state/county info
+    let postOptions = await getCountyFromPostalCode(postalCode, phoneNumber);
+    // using util function to get covid data from our dashboard API;
+    let countyInfo = await getCovidDataFromLocationInfo(postOptions, phoneNumber);
+    // using util function to get state data based on countyInfo previously retrieved from main DB call
+    let covidData = await getStateInfoFromCountyInfo(postOptions.state, countyInfo);
+    // generating and sending appropriate success message
+    generateSMS("SUCCESS", phoneNumber, countyInfo, covidData);
+  })();
+
   // no other activity on server is done unless the user can be verified (they haven't used their number limit for they day)
-  client.verify
-    .services(process.env.TWILIO_VERIFY_SERVICE_SID)
-    .verifications
-    // need to find a way to rate limit without Twilio Verify API
-    .create({ rateLimits: { end_user_phone_number: phoneNumber }, to: process.env.VERIFY_RECEIVER, channel: 'sms' })
-    .then(verification => {
-      // manually verifiying the user so they don't have to type in a verification code
-      client.verify.services(process.env.TWILIO_VERIFY_SERVICE_SID)
-        .verifications(verification.sid)
-        .update({ status: 'approved' })
-        .then(async (res) => {
-          // using util function to get state/county info
-          let postOptions = await getCountyFromPostalCode(postalCode, phoneNumber);
-          // using util function to get covid data from our dashboard API;
-          let countyInfo = await getCovidDataFromLocationInfo(postOptions, phoneNumber);
-          // using util function to get state data based on countyInfo previously retrieved from main DB call
-          let covidData = await getStateInfoFromCountyInfo(postOptions.state, countyInfo);
-          // generating and sending appropriate success message
-          generateSMS("SUCCESS", phoneNumber, countyInfo, covidData);
-        })
-        .catch(err => { console.log(err) })
-    })
-    .catch(err => {
-      console.log(err)
-      // if user can't be verified, define and send error messaging making it clear they have reached their limit for the day
-      generateSMS("LIMIT_REACHED", phoneNumber);
-    })
+  // client.verify
+  //   .services(process.env.TWILIO_VERIFY_SERVICE_SID)
+  //   .verifications
+  //   // need to find a way to rate limit without Twilio Verify API
+  //   .create({ rateLimits: { end_user_phone_number: phoneNumber }, to: process.env.VERIFY_RECEIVER, channel: 'sms' })
+  //   .then(verification => {
+  //     // manually verifiying the user so they don't have to type in a verification code
+  //     client.verify.services(process.env.TWILIO_VERIFY_SERVICE_SID)
+  //       .verifications(verification.sid)
+  //       .update({ status: 'approved' })
+  //       .then(async (res) => {
+  //         // using util function to get state/county info
+  //         let postOptions = await getCountyFromPostalCode(postalCode, phoneNumber);
+  //         // using util function to get covid data from our dashboard API;
+  //         let countyInfo = await getCovidDataFromLocationInfo(postOptions, phoneNumber);
+  //         // using util function to get state data based on countyInfo previously retrieved from main DB call
+  //         let covidData = await getStateInfoFromCountyInfo(postOptions.state, countyInfo);
+  //         // generating and sending appropriate success message
+  //         generateSMS("SUCCESS", phoneNumber, countyInfo, covidData);
+  //       })
+  //       .catch(err => { console.log(err) })
+  //   })
+  //   .catch(err => {
+  //     console.log(err)
+  //     // if user can't be verified, define and send error messaging making it clear they have reached their limit for the day
+  //     generateSMS("LIMIT_REACHED", phoneNumber);
+  //   })
 });
 
 module.exports = router;
