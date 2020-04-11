@@ -5,6 +5,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 // authenticated twilio import
 const client = require("twilio")(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
+const MessagingResponse = require('twilio').twiml.MessagingResponse;
 // one liner to instantiate Express Router
 const router = require("express").Router();
 
@@ -19,6 +20,9 @@ const generateSMS = require('../util/generateSMS');
 router.post("/web", (req, res) => {
   // instantiating post code and phone number
   let phoneNumber, postalCode;
+  
+  // creating new messaging resource for use throughout the endpoint
+  const twiml = new MessagingResponse();
 
   // checking to see where the request came from to handle the body appropratiately
   if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
@@ -34,7 +38,13 @@ router.post("/web", (req, res) => {
   // checking user input to make sure it's valid (in conjunction with frontend validation)
   if (postalCode.toString().length !== 5 || Number.isInteger(postalCode) === false) {
     // if bad input gets through somehow, catch it here as well and send appropriate message
-    generateSMS("BAD_INPUT", phoneNumber);
+    const smsMessage = generateSMS("BAD_INPUT");
+
+    // sending message to user and status code to twilio
+    twiml.message(smsMessage);
+
+    res.writeHead(200, {'Content-Type': 'text/xml'});
+    res.end(twiml.toString());
 
     return
   } 
@@ -42,13 +52,42 @@ router.post("/web", (req, res) => {
   // temporary until we get rate limit fully implemented
   (async function() {
     // using util function to get state/county info
-    let postOptions = await getCountyFromPostalCode(postalCode, phoneNumber);
+    let { locationInfo, badInputMessage } = await getCountyFromPostalCode(postalCode);
+    
+    if (badInputMessage !== '') {
+      // sending message to user and status code to twilio
+      twiml.message(badInputMessage);
+
+      res.writeHead(200, {'Content-Type': 'text/xml'});
+      res.end(twiml.toString());
+
+      return
+    }
+
+    // checking the case of a valid non-US zip code
+    if (!countiesPerState[locationInfo.state]) {
+      let smsMessage = generateSMS("NOT_USA");
+
+      // sending message to user and status code to twilio
+      twiml.message(smsMessage);
+
+      res.writeHead(200, {'Content-Type': 'text/xml'});
+      res.end(twiml.toString());
+    }
     // using util function to get covid data from our dashboard API;
-    let countyInfo = await getCovidDataFromLocationInfo(postOptions, phoneNumber);
+    let countyInfo = await getCovidDataFromLocationInfo(locationInfo, phoneNumber);
     // using util function to get state data based on countyInfo previously retrieved from main DB call
-    let covidData = await getStateInfoFromCountyInfo(postOptions.state, countyInfo);
+    let covidData = await getStateInfoFromCountyInfo(locationInfo.state, countyInfo);
     // generating and sending appropriate success message
-    generateSMS("SUCCESS", phoneNumber, countyInfo, covidData);
+    const smsMessage = generateSMS("SUCCESS", countyInfo, covidData);
+
+    // sending message to user and status code to twilio
+    twiml.message(smsMessage);
+
+    res.writeHead(200, {'Content-Type': 'text/xml'});
+    res.end(twiml.toString());
+
+    return
   })();
 
   // no other activity on server is done unless the user can be verified (they haven't used their number limit for they day)
