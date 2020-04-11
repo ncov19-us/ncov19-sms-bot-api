@@ -10,7 +10,7 @@ const client = require("twilio")(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN
 const upOrDown = require('./upOrDown.js');
 
 // function that generates appropriate message SMS message depending on the success/error case
-function generateSMS(status, toPhoneNumber, countyInfo, covidData) {
+function generateSMS(status, countyInfo, covidData) {
   // defining var to store appropriate message body
   let messageBody;
 
@@ -37,9 +37,9 @@ For more details, visit COVID-19 Tracker 🌍:
   } else if (status === "LIMIT_REACHED") {
     // if they've reached limit
     messageBody =`
-You have used all of your requests for today.
+You have used all of your requests for today.  Try again tomorrow!
 
-For more details, visit COVID-19 Tracker 🌍: 
+In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
                 `
   } else if (status === "SERVER_ERROR") {
@@ -53,9 +53,9 @@ In the meantime, visit COVID-19 Tracker 🌍:
   } else if (status === "BAD_INPUT") {
     // if users input was not valid
     messageBody =`
-I didn't understand that input.  Please use a 5 digit zip code.
+I didn't understand that input.  Please use a valid US 5 digit zip code.
 
-For more details, visit COVID-19 Tracker 🌍: 
+In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
     `
   } else if (status === "NOT_USA") {
@@ -67,15 +67,7 @@ In the meantime, visit COVID-19 Tracker 🌍:
     `   
   }
 
-  // sending appropriate message body
-  client.messages
-  .create({
-    body: messageBody,
-    from: process.env.TWILIO_NUMBER,
-    to: toPhoneNumber,
-  })
-  .then((message) => console.log(message))
-  .catch((err) => console.log(err));
+  return messageBody;
 }
 
 module.exports = generateSMS;
