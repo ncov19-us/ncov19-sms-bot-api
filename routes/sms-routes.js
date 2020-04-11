@@ -49,6 +49,8 @@ router.post("/web", (req, res) => {
     let covidData = await getStateInfoFromCountyInfo(postOptions.state, countyInfo);
     // generating and sending appropriate success message
     generateSMS("SUCCESS", phoneNumber, countyInfo, covidData);
+
+    return
   })();
 
   // no other activity on server is done unless the user can be verified (they haven't used their number limit for they day)
