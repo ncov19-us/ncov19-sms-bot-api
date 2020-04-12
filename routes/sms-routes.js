@@ -1,4 +1,3 @@
-const axios = require("axios");
 // enabling easy use of environment variables through a .env file
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: '../.env' });
@@ -12,17 +11,14 @@ const router = require("express").Router();
 // utililty imports
 const getCountyFromPostalCode = require('../util/getCountyFromPostalCode.js');
 const getCovidDataFromLocationInfo = require('../util/getCovidDataFromLocationInfo.js');
-const getStateInfoFromCountyInfo = require('../util/getStateInfoFromCountyInfo');
-const generateSMS = require('../util/generateSMS');
+const getStateInfoFromCountyInfo = require('../util/getStateInfoFromCountyInfo.js');
+const generateSMS = require('../util/generateSMS.js');
 
 
 // endpoint for SMS and web users
 router.post("/web", (req, res) => {
   // instantiating post code and phone number
   let phoneNumber, postalCode;
-  
-  // creating new messaging resource for use throughout the endpoint
-  const twiml = new MessagingResponse();
 
   // checking to see where the request came from to handle the body appropratiately
   if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
@@ -30,7 +26,7 @@ router.post("/web", (req, res) => {
     phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
 
   } else {
-    // find out what the origin URL is from the Twilio Webhook?
+    // find out what the origin URL is from the Twilio Webhook to make this case more explicit
     postalCode = parseInt(req.body.Body);
     phoneNumber = req.body.From
   }
@@ -41,27 +37,31 @@ router.post("/web", (req, res) => {
     const smsMessage = generateSMS("BAD_INPUT");
 
     // sending message to user and status code to twilio
-    twiml.message(smsMessage);
+    client.messages
+      .create({ from: process.env.TWILIO_NUMBER, body: smsMessage, to: phoneNumber })
+      .then(message => console.log(message))
+      .catch(err => console.log(err));
 
     res.writeHead(200, {'Content-Type': 'text/xml'});
-    res.end(twiml.toString());
 
-    return
-  } 
+    return res.end();
+  }
 
   // temporary until we get rate limit fully implemented
   (async function() {
     // using util function to get state/county info
     let { locationInfo, badInputMessage } = await getCountyFromPostalCode(postalCode);
-    
+
     if (badInputMessage !== '') {
       // sending message to user and status code to twilio
-      twiml.message(badInputMessage);
+      client.messages
+        .create({ from: process.env.TWILIO_NUMBER, body: smsMessage, to: phoneNumber })
+        .then(message => console.log(message))
+        .catch(err => console.log(err));
 
       res.writeHead(200, {'Content-Type': 'text/xml'});
-      res.end(twiml.toString());
 
-      return
+      return res.end();
     }
 
     // checking the case of a valid non-US zip code
@@ -69,25 +69,33 @@ router.post("/web", (req, res) => {
       let smsMessage = generateSMS("NOT_USA");
 
       // sending message to user and status code to twilio
-      twiml.message(smsMessage);
+      client.messages
+        .create({ from: process.env.TWILIO_NUMBER, body: smsMessage, to: phoneNumber })
+        .then(message => console.log(message))
+        .catch(err => console.log(err));
 
       res.writeHead(200, {'Content-Type': 'text/xml'});
-      res.end(twiml.toString());
+
+      return res.end();
     }
+
     // using util function to get covid data from our dashboard API;
     let countyInfo = await getCovidDataFromLocationInfo(locationInfo, phoneNumber);
     // using util function to get state data based on countyInfo previously retrieved from main DB call
     let covidData = await getStateInfoFromCountyInfo(locationInfo.state, countyInfo);
     // generating and sending appropriate success message
-    const smsMessage = generateSMS("SUCCESS", countyInfo, covidData);
+    const smsMessage = generateSMS("SUCCESS", countyInfo);
 
     // sending message to user and status code to twilio
-    twiml.message(smsMessage);
+    client.messages
+      .create({ from: process.env.TWILIO_NUMBER, body: smsMessage, to: phoneNumber })
+      .then(message => console.log(message))
+      .catch(err => console.log(err));
 
+    // setting headers for response to twilio
     res.writeHead(200, {'Content-Type': 'text/xml'});
-    res.end(twiml.toString());
 
-    return
+    return res.end();
   })();
 
   // no other activity on server is done unless the user can be verified (they haven't used their number limit for they day)
