@@ -3,19 +3,17 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: '../.env' });
 }
-// authenticated twilio import
-const client = require("twilio")(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
 
 // util function
 const upOrDown = require('./upOrDown.js');
 
 // function that generates appropriate message SMS message depending on the success/error case
-function generateSMS(status, countyInfo, covidData) {
+function generateSMS(status, countyInfo) {
   // defining var to store appropriate message body
   let messageBody;
 
   // if all these cases are true, create success message body
-  if (status === "SUCCESS" && typeof countyInfo !== "undefined" && covidData !== "undefined") {
+  if (status === "SUCCESS" && typeof countyInfo !== "undefined") {
 
     // still need to find a better way to format template literals besides shift + tabbing them to beginning of line
     messageBody =`
