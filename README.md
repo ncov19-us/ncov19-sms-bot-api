@@ -49,8 +49,6 @@ Unit/Integration tests are being done with Jest and Supertest respectively. To r
 
 ## 5️⃣ Contributing
 
-When contributing to this repository, please read CONTRIBUTION guide below.
-
 Please note we have a [CODE OF CONDUCT](./CODE_OF_CONDUCT.md). Please follow it in all your interactions with the project.
 
 ### Issue/Bug Request
