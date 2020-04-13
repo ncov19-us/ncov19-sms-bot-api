@@ -1,361 +1,131 @@
-const axios = require("axios");
 // enabling easy use of environment variables through a .env file
 if (process.env.NODE_ENV !== "production") {
-  require("dotenv").config();
+  require("dotenv").config({ path: '../.env' });
 }
-
 // authenticated twilio import
-const client = require("twilio")(
-  process.env.ACCOUNT_SID,
-  process.env.AUTH_TOKEN
-);
+const client = require("twilio")(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
+const MessagingResponse = require('twilio').twiml.MessagingResponse;
 // one liner to instantiate Express Router
 const router = require("express").Router();
 
-const countiesPerState = {
-  TX: 254,
-  GA: 159,
-  VA: 134,
-  KY: 120,
-  M0: 115,
-  KS: 105,
-  IL: 102,
-  NC: 100,
-  IA: 99,
-  TN: 95,
-  NE: 93,
-  IN: 92,
-  OH: 88,
-  MN: 87,
-  MI: 83,
-  MS: 82,
-  OK: 77,
-  AR: 75,
-  WI: 72,
-  PA: 67,
-  FL: 67,
-  AL: 67,
-  SD: 66,
-  LA: 64,
-  CO: 64,
-  NY: 62,
-  CA: 58,
-  MT: 56,
-  WV: 55,
-  ND: 53,
-  SC: 46,
-  ID: 44,
-  WA: 39,
-  OR: 36,
-  NM: 33,
-  UT: 29,
-  AK: 27,
-  MD: 24,
-  WY: 23,
-  NJ: 21,
-  NV: 17,
-  ME: 16,
-  AZ: 15,
-  VT: 14,
-  MA: 14,
-  NH: 10,
-  CT: 8,
-  RI: 5,
-  HI: 5,
-  DE: 3,
-};
-// ======== Routes =========
+// utililty imports
+const getCountyFromPostalCode = require('../util/getCountyFromPostalCode.js');
+const getCovidDataFromLocationInfo = require('../util/getCovidDataFromLocationInfo.js');
+const getStateInfoFromCountyInfo = require('../util/getStateInfoFromCountyInfo.js');
+const generateSMS = require('../util/generateSMS.js');
 
-// -- POST Routes --
 
-// endpoint for users who prompt app via web app
+// endpoint for SMS and web users
 router.post("/web", (req, res) => {
-  // getting postal code from web app request
-  const postalCode = req.body.zip;
-  const phonenumber = req.body.phonenumber.replace(/[,.-]/g, "");
+  // instantiating post code and phone number
+  let phoneNumber, postalCode;
 
-  // instantiating county and state vars
-  let county, state;
+  // checking to see where the request came from to handle the body appropratiately
+  if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
+    postalCode = parseInt(req.body.zip);
+    phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
 
-  axios
-    .get(
-      `https://api.opencagedata.com/geocode/v1/google-v3-json?q=countrycode=us|postcode=${postalCode}&key=${process.env.GEOCODING_KEY}&limit=1`
-    )
-    .then((res) => {
-      const formatedAddressArray = res.data.results[0].formatted_address.split(
-        ","
-      );
-      // console.log("FORMATED ADDRESS ARRAY", formatedAddressArray);
-      state = formatedAddressArray[1].split(" ")[1];
-      // console.log(state)
-      const countyArray = formatedAddressArray[0].split(" ");
-      countyArray.pop();
-      county = countyArray.join(" ");
-      // console.log(county);
-      // declaring options for POST request to main API
-      const postOptions = {
-        state: state,
-        county: county,
-      };
+  } else {
+    // find out what the origin URL is from the Twilio Webhook to make this case more explicit
+    postalCode = parseInt(req.body.Body);
+    phoneNumber = req.body.From
+  }
 
-      // console.log("post options", postOptions);
-      let countyInfo, stateInfo;
+  // checking user input to make sure it's valid (in conjunction with frontend validation)
+  if (postalCode.toString().length !== 5 || Number.isInteger(postalCode) === false) {
+    // if bad input gets through somehow, catch it here as well and send appropriate message
+    const smsMessage = generateSMS("BAD_INPUT");
 
-      axios
-        .post(`${process.env.DASHBOARD_API_URL}/county`, postOptions)
-        .then((res) => {
-          console.log(res.data.message);
-          countyInfo = { ...res.data.message[0] };
+    // sending message to user and status code to twilio
+    client.messages
+      .create({ from: process.env.TWILIO_NUMBER, body: smsMessage, to: phoneNumber })
+      .then(message => console.log(message))
+      .catch(err => console.log(err));
 
-          // post request to build comparisons to state averages to send to user
-          axios
-            .post(`${process.env.DASHBOARD_API_URL}/stats`, { state: state })
-            .then((res) => {
-              let numOfCounties = countiesPerState[state];
-              console.log(res.data.message);
-              // let [ tested, todays_tested, confirmed, todays_confirmed, deaths, todays_deaths ] = res.data.message;
-              console.log(res.data.message.todays_confirmed);
-              let newCaseIncrease =
-                countyInfo.new /
-                (res.data.message.todays_confirmed / numOfCounties);
-              let totalCaseIncrease =
-                countyInfo.confirmed /
-                (res.data.message.confirmed / numOfCounties);
-              let newDeathIncrease =
-                countyInfo.new_death /
-                (res.data.message.todays_deaths / numOfCounties);
-              let totalDeathIncrease =
-                countyInfo.death / (res.data.message.deaths / numOfCounties);
+    res.writeHead(200, {'Content-Type': 'text/xml'});
 
-              console.log("new", newCaseIncrease);
-              // let fatalityRateIncrease = countyInfo.fatality_rate / s
+    return res.end();
+  }
 
-              function upOrDown(num) {
-                let arrow;
+  // temporary until we get rate limit fully implemented
+  (async function() {
+    // using util function to get state/county info
+    let { locationInfo, badInputMessage } = await getCountyFromPostalCode(postalCode);
 
-                if (num > 0) {
-                  arrow = "\u2B06";
-                  console.log("up");
-                  return arrow;
-                } else if (num === 0) {
-                  arrow = "";
-                  console.log("none");
-                  return arrow;
-                } else {
-                  arrow = "\u2B07";
-                  console.log("down");
-                  return arrow;
-                }
-              }
-
-              const countyMessageBody = `
-  ${countyInfo.county_name} County, ${countyInfo.state_name}
-
-  Cases Today: ${countyInfo.new} (${upOrDown(
-                newCaseIncrease
-              )} ${newCaseIncrease.toFixed(2)}% from state avg.)
-  Total Cases: ${countyInfo.confirmed} (${upOrDown(
-                totalCaseIncrease
-              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-  Deaths Today: ${countyInfo.new_death} (${upOrDown(
-                newDeathIncrease
-              )} ${newDeathIncrease.toFixed(2)}% from state avg.)
-  Total Deaths: ${countyInfo.death} (${upOrDown(
-                totalCaseIncrease
-              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-  Fatality Rate: ${countyInfo.fatality_rate}
-            `;
-
-              // console.log(stateArr);
-              client.messages
-                .create({
-                  body: countyMessageBody,
-                  from: "+18133950040",
-                  to: `${phonenumber}`,
-                })
-                .then((message) => console.log("test", message))
-                .catch((err) => console.log(err));
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        })
-        .catch((err) => {
-          console.log(err);
-          client.messages
-            .create({
-              body: "There was a problem on our end.  Please try again later",
-              from: "+18133950040",
-              to: `${phonenumber}`,
-            })
-            .then((message) => console.log("test", message))
-            .catch((err) => console.log(err));
-        });
-    })
-    .catch((err) => {
-      // setting inital message in case of failure, request header contents
+    if (badInputMessage !== '') {
+      // sending message to user and status code to twilio
       client.messages
-        .create({
-          body: "Please use a 5 digit zip code.",
-          from: "+18133950040",
-          to: `${phonenumber}`,
-        })
-        .then((message) => console.log("test", message))
-        .catch((err) => console.log(err));
-    });
-});
+        .create({ from: process.env.TWILIO_NUMBER, body: smsMessage, to: phoneNumber })
+        .then(message => console.log(message))
+        .catch(err => console.log(err));
 
+      res.writeHead(200, {'Content-Type': 'text/xml'});
 
+      return res.end();
+    }
 
+    // checking the case of a valid non-US zip code
+    if (!countiesPerState[locationInfo.state]) {
+      let smsMessage = generateSMS("NOT_USA");
 
-
-
-
-// endpoint for users who prompt app via SMS
-router.post("/", (req, res) => {
-  const postalCode = req.body.Body;
-  // console.log("req.body", req.body);
-
-  // instantiating county and state vars
-  let county, state;
-
-  axios
-    .get(
-      `https://api.opencagedata.com/geocode/v1/google-v3-json?q=countrycode=us|postcode=${postalCode}&key=${process.env.GEOCODING_KEY}&limit=1`
-    )
-    .then((res) => {
-      const formatedAddressArray = res.data.results[0].formatted_address.split(
-        ","
-      );
-      // console.log("FORMATED ADDRESS ARRAY", formatedAddressArray);
-      state = formatedAddressArray[1].split(" ")[1];
-      // console.log(state)
-      const countyArray = formatedAddressArray[0].split(" ");
-      countyArray.pop();
-      county = countyArray.join(" ");
-      // console.log(county);
-      // declaring options for POST request to main API
-      const postOptions = {
-        state: state,
-        county: county,
-      };
-
-      // console.log("post options", postOptions);
-      let countyInfo, stateInfo;
-
-      axios
-        .post(`${process.env.DASHBOARD_API_URL}/county`, postOptions)
-        .then((res) => {
-          console.log(res.data.message);
-          countyInfo = { ...res.data.message[0] };
-
-          // post request to build comparisons to state averages to send to user
-          axios
-            .post(`${process.env.DASHBOARD_API_URL}/stats`, { state: state })
-            .then((res) => {
-              let numOfCounties = countiesPerState[state];
-              console.log(res.data.message);
-              // let [ tested, todays_tested, confirmed, todays_confirmed, deaths, todays_deaths ] = res.data.message;
-              console.log(res.data.message.todays_confirmed);
-              let newCaseIncrease =
-                countyInfo.new /
-                (res.data.message.todays_confirmed / numOfCounties);
-              let totalCaseIncrease =
-                countyInfo.confirmed /
-                (res.data.message.confirmed / numOfCounties);
-              let newDeathIncrease =
-                countyInfo.new_death /
-                (res.data.message.todays_deaths / numOfCounties);
-              let totalDeathIncrease =
-                countyInfo.death / (res.data.message.deaths / numOfCounties);
-
-              console.log("new", newCaseIncrease);
-              // let fatalityRateIncrease = countyInfo.fatality_rate / s
-
-              function upOrDown(num) {
-                let arrow;
-
-                if (num > 0) {
-                  arrow = "\u2B06";
-                  console.log("up");
-                  return arrow;
-                } else if (num === 0) {
-                  arrow = "";
-                  console.log("none");
-                  return arrow;
-                } else {
-                  arrow = "\u2B07";
-                  console.log("down");
-                  return arrow;
-                }
-              }
-
-              const countyMessageBody = `
-${countyInfo.county_name} County, ${countyInfo.state_name}
-
-Cases Today: ${countyInfo.new} (${upOrDown(
-                newCaseIncrease
-              )} ${newCaseIncrease.toFixed(2)}% from state avg.)
-Total Cases: ${countyInfo.confirmed} (${upOrDown(
-                totalCaseIncrease
-              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-Deaths Today: ${countyInfo.new_death} (${upOrDown(
-                newDeathIncrease
-              )} ${newDeathIncrease.toFixed(2)}% from state avg.)
-Total Deaths: ${countyInfo.death} (${upOrDown(
-                totalCaseIncrease
-              )} ${totalCaseIncrease.toFixed(2)}% from state avg.)
-Fatality Rate: ${countyInfo.fatality_rate}
-            `;
-
-              // console.log(stateArr);
-              client.messages
-                .create({
-                  body: countyMessageBody,
-                  from: "+18133950040",
-                  to: `${req.body.From}`,
-                })
-                .then((message) => console.log("test", message))
-                .catch((err) => console.log(err));
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-
-          // const stateMessageBody = `
-          // ${postOptions.state}
-          // ${postOptions.county} County
-          // Confirmed cases today: ${stateInfo.todays_confirmed}
-          // Total confirmed cases: ${stateInfo.confirmed}
-          // Tested today: ${stateInfo.todays_tested}
-          // Total tested: ${stateInfo.tested}
-          // Today's deaths: ${stateInfo.todays_deaths}
-          // Total deaths: ${stateInfo.deaths}
-          // `
-        })
-        .catch((err) => {
-          console.log(err);
-          client.messages
-            .create({
-              body: "There was a problem on us",
-              from: "+18133950040",
-              to: `${req.body.From}`,
-            })
-            .then((message) => console.log("test", message))
-            .catch((err) => console.log(err));
-        });
-    })
-    .catch((err) => {
-      // setting inital message in case of failure, request header contents
+      // sending message to user and status code to twilio
       client.messages
-        .create({
-          body: "Please use a 5 digit zip code.",
-          from: "+18133950040",
-          to: `${req.body.From}`,
-        })
-        .then((message) => console.log("test", message))
-        .catch((err) => console.log(err));
-    });
+        .create({ from: process.env.TWILIO_NUMBER, body: smsMessage, to: phoneNumber })
+        .then(message => console.log(message))
+        .catch(err => console.log(err));
+
+      res.writeHead(200, {'Content-Type': 'text/xml'});
+
+      return res.end();
+    }
+
+    // using util function to get covid data from our dashboard API;
+    let countyInfo = await getCovidDataFromLocationInfo(locationInfo, phoneNumber);
+    // using util function to get state data based on countyInfo previously retrieved from main DB call
+    let covidData = await getStateInfoFromCountyInfo(locationInfo.state, countyInfo);
+    // generating and sending appropriate success message
+    const smsMessage = generateSMS("SUCCESS", countyInfo);
+
+    // sending message to user and status code to twilio
+    client.messages
+      .create({ from: process.env.TWILIO_NUMBER, body: smsMessage, to: phoneNumber })
+      .then(message => console.log(message))
+      .catch(err => console.log(err));
+
+    // setting headers for response to twilio
+    res.writeHead(200, {'Content-Type': 'text/xml'});
+
+    return res.end();
+  })();
+
+  // no other activity on server is done unless the user can be verified (they haven't used their number limit for they day)
+  // client.verify
+  //   .services(process.env.TWILIO_VERIFY_SERVICE_SID)
+  //   .verifications
+  //   // need to find a way to rate limit without Twilio Verify API
+  //   .create({ rateLimits: { end_user_phone_number: phoneNumber }, to: process.env.VERIFY_RECEIVER, channel: 'sms' })
+  //   .then(verification => {
+  //     // manually verifiying the user so they don't have to type in a verification code
+  //     client.verify.services(process.env.TWILIO_VERIFY_SERVICE_SID)
+  //       .verifications(verification.sid)
+  //       .update({ status: 'approved' })
+  //       .then(async (res) => {
+  //         // using util function to get state/county info
+  //         let postOptions = await getCountyFromPostalCode(postalCode, phoneNumber);
+  //         // using util function to get covid data from our dashboard API;
+  //         let countyInfo = await getCovidDataFromLocationInfo(postOptions, phoneNumber);
+  //         // using util function to get state data based on countyInfo previously retrieved from main DB call
+  //         let covidData = await getStateInfoFromCountyInfo(postOptions.state, countyInfo);
+  //         // generating and sending appropriate success message
+  //         generateSMS("SUCCESS", phoneNumber, countyInfo, covidData);
+  //       })
+  //       .catch(err => { console.log(err) })
+  //   })
+  //   .catch(err => {
+  //     console.log(err)
+  //     // if user can't be verified, define and send error messaging making it clear they have reached their limit for the day
+  //     generateSMS("LIMIT_REACHED", phoneNumber);
+  //   })
 });
 
 module.exports = router;

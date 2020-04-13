@@ -12,9 +12,9 @@ const app = express();
 
 // middleware
 app.use(express.urlencoded({ extended: true })); // learn more about this middleware here: https://expressjs.com/en/5x/api.html#express.urlencoded
-app.use(helmet());
 app.use(express.json());
-app.use(cors({ origin: "*" }));
+app.use(helmet());
+app.use(cors());
 
 // route imports
 const smsRoutes = require("./routes/sms-routes.js");
