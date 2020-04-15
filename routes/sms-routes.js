@@ -16,14 +16,23 @@ const generateSMS = require('../util/generateSMS.js');
 // const checkPhoneNum = require('../util/checkPhoneNum.js');
 
 // endpoint for SMS and web users
-router.post("/web", (req, res) => {
+router.post("/web", async (req, res) => {
   // instantiating post code and phone number
   let phoneNumber, postalCode;
+<<<<<<< HEAD
 
   // // checking to see where the request came from to handle the body appropratiately
   // if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
   //   postalCode = parseInt(req.body.zip);
   //   phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
+=======
+  // res.writeHead(500)
+  // return res.end()
+  // checking to see where the request came from to handle the body appropratiately
+  if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
+    postalCode = parseInt(req.body.zip);
+    phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
+>>>>>>> staging
 
   // }
   console.log(req.body);
@@ -51,7 +60,6 @@ router.post("/web", (req, res) => {
 
     return res.end();
   }
-
   // temporary until we get rate limit fully implemented
   (async function () {
     // using util function to get state/county info
@@ -89,14 +97,19 @@ router.post("/web", (req, res) => {
     }
 
     // using util function to get covid data from our dashboard API;
-    let countyInfo = await getCovidDataFromLocationInfo(locationInfo, phoneNumber);
-    console.log(countyInfo);
-    // using util function to get state data based on countyInfo previously retrieved from main DB call
-    let covidData = await getStateInfoFromCountyInfo(locationInfo.state, countyInfo);
-    console.log(covidData);
-    // generating and sending appropriate success message
-    const smsMessage = generateSMS("SUCCESS", countyInfo);
-    console.log(smsMessage);
+    const countyInfo = await getCovidDataFromLocationInfo(locationInfo, phoneNumber);
+
+    let smsMessage;
+
+    // checking if getCovidFromLocationInfo properly return the county info.  If not, creating error message body
+    if (countyInfo.county_name) {
+      // generating and sending appropriate success message
+      smsMessage = generateSMS("SUCCESS", countyInfo);
+
+    } else {
+      smsMessage = generateSMS("SERVER_ERROR");
+    }
+
 
     // sending message to user and status code to twilio
     client.messages
