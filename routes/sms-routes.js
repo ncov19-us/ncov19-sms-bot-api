@@ -13,23 +13,28 @@ const getCountyFromPostalCode = require('../util/getCountyFromPostalCode.js');
 const getCovidDataFromLocationInfo = require('../util/getCovidDataFromLocationInfo.js');
 const getStateInfoFromCountyInfo = require('../util/getStateInfoFromCountyInfo.js');
 const generateSMS = require('../util/generateSMS.js');
-
+// const checkPhoneNum = require('../util/checkPhoneNum.js');
 
 // endpoint for SMS and web users
 router.post("/web", (req, res) => {
   // instantiating post code and phone number
   let phoneNumber, postalCode;
 
-  // checking to see where the request came from to handle the body appropratiately
-  if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
-    postalCode = parseInt(req.body.zip);
-    phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
+  // // checking to see where the request came from to handle the body appropratiately
+  // if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
+  //   postalCode = parseInt(req.body.zip);
+  //   phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
 
-  } else {
-    // find out what the origin URL is from the Twilio Webhook to make this case more explicit
-    postalCode = parseInt(req.body.Body);
-    phoneNumber = req.body.From
-  }
+  // }
+  console.log(req.body);
+  postalCode = parseInt(req.body.zip);
+  phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
+
+  // else {
+  //   // find out what the origin URL is from the Twilio Webhook to make this case more explicit
+  //   postalCode = parseInt(req.body.Body);
+  //   phoneNumber = req.body.From
+  // }
 
   // checking user input to make sure it's valid (in conjunction with frontend validation)
   if (postalCode.toString().length !== 5 || Number.isInteger(postalCode) === false) {
@@ -42,15 +47,17 @@ router.post("/web", (req, res) => {
       .then(message => console.log(message))
       .catch(err => console.log(err));
 
-    res.writeHead(200, {'Content-Type': 'text/xml'});
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
 
     return res.end();
   }
 
   // temporary until we get rate limit fully implemented
-  (async function() {
+  (async function () {
     // using util function to get state/county info
     let { locationInfo, badInputMessage } = await getCountyFromPostalCode(postalCode);
+    console.log(locationInfo);
+    console.log(badInputMessage);
 
     if (badInputMessage !== '') {
       // sending message to user and status code to twilio
@@ -59,13 +66,15 @@ router.post("/web", (req, res) => {
         .then(message => console.log(message))
         .catch(err => console.log(err));
 
-      res.writeHead(200, {'Content-Type': 'text/xml'});
+      res.writeHead(200, { 'Content-Type': 'text/xml' });
 
       return res.end();
     }
 
+    console.log(countiesPerState[locationInfo.state]);
     // checking the case of a valid non-US zip code
     if (!countiesPerState[locationInfo.state]) {
+
       let smsMessage = generateSMS("NOT_USA");
 
       // sending message to user and status code to twilio
@@ -74,17 +83,20 @@ router.post("/web", (req, res) => {
         .then(message => console.log(message))
         .catch(err => console.log(err));
 
-      res.writeHead(200, {'Content-Type': 'text/xml'});
+      res.writeHead(200, { 'Content-Type': 'text/xml' });
 
       return res.end();
     }
 
     // using util function to get covid data from our dashboard API;
     let countyInfo = await getCovidDataFromLocationInfo(locationInfo, phoneNumber);
+    console.log(countyInfo);
     // using util function to get state data based on countyInfo previously retrieved from main DB call
     let covidData = await getStateInfoFromCountyInfo(locationInfo.state, countyInfo);
+    console.log(covidData);
     // generating and sending appropriate success message
     const smsMessage = generateSMS("SUCCESS", countyInfo);
+    console.log(smsMessage);
 
     // sending message to user and status code to twilio
     client.messages
@@ -93,7 +105,7 @@ router.post("/web", (req, res) => {
       .catch(err => console.log(err));
 
     // setting headers for response to twilio
-    res.writeHead(200, {'Content-Type': 'text/xml'});
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
 
     return res.end();
   })();
