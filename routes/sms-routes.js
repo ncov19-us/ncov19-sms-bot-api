@@ -2,12 +2,17 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: "../.env" });
 }
+
+// middleware
+const captcha = require("../middleware/validateCaptcha");
+
 // authenticated twilio import
 const client = require("twilio")(
   process.env.ACCOUNT_SID,
   process.env.AUTH_TOKEN
 );
 // const MessagingResponse = require('twilio').twiml.MessagingResponse;
+
 // one liner to instantiate Express Router
 const router = require("express").Router();
 
@@ -17,11 +22,13 @@ const getCovidDataFromLocationInfo = require("../util/getCovidDataFromLocationIn
 const generateSMS = require("../util/generateSMS.js");
 const countiesPerState = require("../util/countiesPerState.js");
 
+
 const NodeCache = require("node-cache");
 const myCache = new NodeCache({ stdTTL: 86400 });
 
 // endpoint for SMS and web users
 router.post("/", async (req, res) => {
+
   // instantiating post code and phone number
   let phoneNumber, postalCode;
   // checking to see where the request came from to handle the body appropratiately
