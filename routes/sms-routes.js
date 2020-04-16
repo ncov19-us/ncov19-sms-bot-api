@@ -15,15 +15,13 @@ const generateSMS = require('../util/generateSMS.js');
 const countiesPerState = require('../util/countiesPerState.js')
 
 const NodeCache = require("node-cache");
-const myCache = new NodeCache({ stdTTL: 100, checkperiod: 120 });
+const myCache = new NodeCache({ stdTTL: 86400 });
 
 // endpoint for SMS and web users
 router.post("/web", async (req, res) => {
   // instantiating post code and phone number
   let phoneNumber, postalCode;
-  // console.log(req);
-  // res.writeHead(500)
-  // return res.end()
+
   // checking to see where the request came from to handle the body appropratiately
   if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
     postalCode = parseInt(req.body.zip);
@@ -34,8 +32,6 @@ router.post("/web", async (req, res) => {
     postalCode = parseInt(req.body.Body);
     phoneNumber = req.body.From
   }
-  // postalCode = parseInt(req.body.zip);
-  // phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
 
   // 1. check for user phone number, and get the object
   let userObj = myCache.get(phoneNumber);
@@ -94,12 +90,12 @@ router.post("/web", async (req, res) => {
 
     return res.end();
   }
+
+
   // temporary until we get rate limit fully implemented
   (async function () {
     // using util function to get state/county info
     let { locationInfo, badInputMessage } = await getCountyFromPostalCode(postalCode);
-    // console.log(locationInfo);
-    // console.log(badInputMessage);
 
     if (badInputMessage !== '') {
       // sending message to user and status code to twilio
@@ -108,12 +104,12 @@ router.post("/web", async (req, res) => {
         .then(message => console.log(message))
         .catch(err => console.log(err));
 
+      console.log(myCache);
       res.writeHead(200, { 'Content-Type': 'text/xml' });
 
       return res.end();
     }
 
-    // console.log(countiesPerState[locationInfo.state]);
     // checking the case of a valid non-US zip code
     if (!countiesPerState[locationInfo.state]) {
 
