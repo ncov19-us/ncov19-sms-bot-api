@@ -18,8 +18,10 @@ app.use(cors());
 
 // route imports
 const smsRoutes = require("./routes/sms-routes.js");
+// const testRoutes = require('./routes/testRoutes.js');
 
 // creating routes
 app.use("/sms", smsRoutes); // sms bot routes
+// app.use("/test", testRoutes) // test routes for dev use
 
 module.exports = app;
