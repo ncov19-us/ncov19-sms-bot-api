@@ -16,7 +16,7 @@ function generateSMS(status, countyInfo) {
   if (status === "SUCCESS" && typeof countyInfo !== "undefined") {
 
     // still need to find a better way to format template literals besides shift + tabbing them to beginning of line
-    messageBody =`
+    messageBody = `
 ${countyInfo.county_name} County, ${countyInfo.state_name} 🇺🇸
 
 Today's Report: 
@@ -34,7 +34,7 @@ For more details, visit COVID-19 Tracker 🌍:
 
   } else if (status === "LIMIT_REACHED") {
     // if they've reached limit
-    messageBody =`
+    messageBody = `
 You have used all of your requests for today.  Try again tomorrow!
 
 In the meantime, visit COVID-19 Tracker 🌍: 
@@ -42,7 +42,7 @@ In the meantime, visit COVID-19 Tracker 🌍:
                 `
   } else if (status === "SERVER_ERROR") {
     // if there was a server error
-    messageBody =`
+    messageBody = `
 There was a problem on our end.  Please try again later!
 
 In the meantime, visit COVID-19 Tracker 🌍: 
@@ -50,19 +50,19 @@ In the meantime, visit COVID-19 Tracker 🌍:
                 `;
   } else if (status === "BAD_INPUT") {
     // if users input was not valid
-    messageBody =`
+    messageBody = `
 I didn't understand that input.  Please use a valid US 5 digit zip code.
 
 In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
     `
   } else if (status === "NOT_USA") {
-    messageBody =`
+    messageBody = `
 Sorry, our SMS service doesn't currently work in countries other than the USA.
 
 In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
-    `   
+    `
   }
 
   return messageBody;
