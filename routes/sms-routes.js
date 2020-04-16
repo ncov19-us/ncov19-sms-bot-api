@@ -173,6 +173,7 @@ router.post("/web", async (req, res) => {
 
     let smsMessage;
     userObj = myCache.get(phoneNumber);
+
     // checking if getCovidFromLocationInfo properly return the county info.  If not, creating error message body
     if (countyInfo.county_name) {
       // generating and sending appropriate success message
