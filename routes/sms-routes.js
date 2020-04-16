@@ -21,7 +21,7 @@ const NodeCache = require("node-cache");
 const myCache = new NodeCache({ stdTTL: 86400 });
 
 // endpoint for SMS and web users
-router.post("/web", async (req, res) => {
+router.post("/", async (req, res) => {
   // instantiating post code and phone number
   let phoneNumber, postalCode;
   // checking to see where the request came from to handle the body appropratiately
