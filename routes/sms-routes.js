@@ -74,7 +74,7 @@ router.post("/web", async (req, res) => {
 
 
   // 1. check for user phone number, and get the object
-  let userObj = myCache.get(phoneNumber);
+  userObj = myCache.get(phoneNumber);
   console.log(userObj);
   // 2. add user to cache
   if (!userObj) {
@@ -165,14 +165,15 @@ router.post("/web", async (req, res) => {
 
       res.writeHead(200, { 'Content-Type': 'text/xml' });
 
-      return res.end();
+      return res.end(); 
     }
 
     // using util function to get covid data from our dashboard API;
     const countyInfo = await getCovidDataFromLocationInfo(locationInfo, phoneNumber);
 
     let smsMessage;
-    let userObj = myCache.get(phoneNumber);
+    userObj = myCache.get(phoneNumber);
+
     // checking if getCovidFromLocationInfo properly return the county info.  If not, creating error message body
     if (countyInfo.county_name) {
       // generating and sending appropriate success message
