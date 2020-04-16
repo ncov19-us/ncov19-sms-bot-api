@@ -31,12 +31,11 @@ router.post("/web", async (req, res) => {
     postalCode = parseInt(req.body.Body);
     phoneNumber = req.body.From
   }
-  // postalCode = parseInt(req.body.zip);
-  // phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
 
   // 1. check for user phone number, and get the object
   let userObj = myCache.get(phoneNumber);
-  console.log(userObj);
+
+
   // 2. add user to cache
   if (!userObj) {
     userObj = { msgLimit: process.env.DAILY_MESSAGE_LIMIT - 1, alertedUser: false };
@@ -44,9 +43,7 @@ router.post("/web", async (req, res) => {
     const success = myCache.set(phoneNumber, userObj);
     console.log(success);
 
-  }
-  // 3. if user in cache
-  else {
+  } else {
     // 3 a. if user still has message limit   
     if (userObj.msgLimit > 0) {
       // updating message limit to subtract 1
@@ -67,8 +64,8 @@ router.post("/web", async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'text/xml' });
 
       return res.end();
-    }
-    else if (userObj.msgLimit === 0 && userObj.alertedUser === true) {
+    } else if (userObj.msgLimit === 0 && userObj.alertedUser === true) {
+
       return res.end();
     }
   }
@@ -86,9 +83,8 @@ router.post("/web", async (req, res) => {
     const success = myCache.set(phoneNumber, userObj);
     console.log(success);
 
-  }
-  // 3. if user in cache
-  else {
+    // 3. if user in cache
+  } else {
     // 3 a. if user still has message limit   
     if (userObj.msgLimit > 0) {
       // updating message limit to subtract 1
@@ -176,11 +172,11 @@ router.post("/web", async (req, res) => {
     const countyInfo = await getCovidDataFromLocationInfo(locationInfo, phoneNumber);
 
     let smsMessage;
-
+    let userObj = myCache.get(phoneNumber);
     // checking if getCovidFromLocationInfo properly return the county info.  If not, creating error message body
     if (countyInfo.county_name) {
       // generating and sending appropriate success message
-      smsMessage = generateSMS("SUCCESS", countyInfo);
+      smsMessage = generateSMS("SUCCESS", countyInfo, userObj);
 
     } else {
       smsMessage = generateSMS("SERVER_ERROR");

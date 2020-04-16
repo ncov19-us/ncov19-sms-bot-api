@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "production") {
 const upOrDown = require('./upOrDown.js');
 
 // function that generates appropriate message SMS message depending on the success/error case
-function generateSMS(status, countyInfo) {
+function generateSMS(status, countyInfo, userObj) {
   // defining var to store appropriate message body
   let messageBody;
 
@@ -27,6 +27,7 @@ Total Report:
 - Total Confirmed Cases: ${upOrDown(countyInfo.confirmed)} ${countyInfo.confirmed}
 - Total Deaths: ${upOrDown(countyInfo.death)} ${countyInfo.death}
 
+Remaining Messages: (${userObj.msgLimit}/${process.env.DAILY_MESSAGE_LIMIT})
 
 For more details, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
@@ -35,7 +36,7 @@ For more details, visit COVID-19 Tracker 🌍:
   } else if (status === "LIMIT_REACHED") {
     // if they've reached limit
     messageBody = `
-You have used all of your requests for today.  Try again tomorrow!
+You have used all of your messages for today.  Try again tomorrow!
 
 In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
