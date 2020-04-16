@@ -17,7 +17,7 @@ function generateSMS(status, countyInfo, userObj) {
 
     // still need to find a better way to format template literals besides shift + tabbing them to beginning of line
     messageBody = `
-${countyInfo.county_name} County, ${countyInfo.state_name} 🇺🇸
+${countyInfo.county_name} ${countyInfo.county_name.includes("New York") ? "City" : "County"}, ${countyInfo.state_name} 🇺🇸
 
 Today's Report: 
 - Confirmed Cases: ${upOrDown(countyInfo.new)} ${countyInfo.new}

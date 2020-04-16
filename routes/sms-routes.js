@@ -174,7 +174,7 @@ router.post("/", async (req, res) => {
         body: smsMessage,
         to: phoneNumber,
       })
-      .then((message) => console.log(message))
+      .then((message) => console.log('ok'))
       .catch((err) => console.log(err));
 
     // setting headers for response to twilio
