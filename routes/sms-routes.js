@@ -25,17 +25,17 @@ router.post("/web", async (req, res) => {
   // res.writeHead(500)
   // return res.end()
   // checking to see where the request came from to handle the body appropratiately
-  // if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
-  //   postalCode = parseInt(req.body.zip);
-  //   phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
-  // }
-  // else {
-  //   // find out what the origin URL is from the Twilio Webhook to make this case more explicit
-  //   postalCode = parseInt(req.body.Body);
-  //   phoneNumber = req.body.From
-  // }
-  postalCode = parseInt(req.body.zip);
-  phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
+  if (req.get('origin') && req.get('origin').includes(process.env.WEB_REQUEST_ORIGIN)) {
+    postalCode = parseInt(req.body.zip);
+    phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
+  }
+  else {
+    // find out what the origin URL is from the Twilio Webhook to make this case more explicit
+    postalCode = parseInt(req.body.Body);
+    phoneNumber = req.body.From
+  }
+  // postalCode = parseInt(req.body.zip);
+  // phoneNumber = `+1${req.body.phone.replace(/[,.-]/g, "")}`;
 
   // 1. check for user phone number, and get the object
   let userObj = myCache.get(phoneNumber);
