@@ -15,16 +15,15 @@ async function getCountyFromPostalCode(postalCode, phoneNumber) {
   let location, locationObj;
 
   try {
-    
+
     // storing response in var
-    location = await axios.post(`${process.env.ZIP_CODE_URL}/zip`, { zip_code: postalCode });
-    // console.log(location)
+    location = await axios.post(`${process.env.DASHBOARD_API_URL}/zip`, { zip_code: postalCode });
+
     locationObj = { // using state abbreviations object to convert full state name to 2 letter state code
-  
+
       state: stateAbbreviations[location.data.message.state_name], // ex. CA
       county: location.data.message.county_name, // ex. Los Angeles
     };
-
   } catch(err) {
 
     // if/else to send correct error message depending on what the issue is
