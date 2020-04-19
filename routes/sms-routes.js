@@ -70,7 +70,7 @@ router.post("/", setAndValidateVars, async (req, res) => {
 
   // using util function to get state/county info
   let locationInfo = await getCountyFromPostalCode(postalCode, phoneNumber);
-  console.log('here', locationInfo)
+  // console.log('here', locationInfo)
 
   // using util function to get covid data from our dashboard API;
   const countyInfo = await getCovidDataFromLocationInfo(
