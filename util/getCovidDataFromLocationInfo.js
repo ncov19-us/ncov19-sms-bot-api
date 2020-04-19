@@ -9,7 +9,7 @@ if (process.env.NODE_ENV !== "production") {
 const generateSMS = require('./generateSMS.js');
 
 // function makes a post request to the main dashboard API to query and return COVID-19 info based on location data provided by user
-async function getCovidDataFromLocationInfo(locationInfo) {
+async function getCovidDataFromLocationInfo(locationInfo, phoneNumber) {
   let countyData;
 
   try {
@@ -19,7 +19,7 @@ async function getCovidDataFromLocationInfo(locationInfo) {
   } catch (err) {
     console.log(err);
     // handling error if dashboard API down
-    generateSMS("SERVER_ERROR");
+    generateSMS("SERVER_ERROR", phoneNumber);
 
     return messageBody;
   }
