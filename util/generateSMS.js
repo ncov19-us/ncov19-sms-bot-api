@@ -4,11 +4,17 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: '../.env' });
 }
 
+// authenticated twilio import
+const client = require("twilio")(
+  process.env.ACCOUNT_SID,
+  process.env.AUTH_TOKEN
+);
+
 // util function
 const upOrDown = require('./upOrDown.js');
 
 // function that generates appropriate message SMS message depending on the success/error case
-function generateSMS(status, countyInfo, userObj) {
+function generateSMS(status, phoneNumber, countyInfo, userObj) {
   // defining var to store appropriate message body
   let messageBody;
 
@@ -64,9 +70,19 @@ Sorry, our SMS service doesn't currently work in countries other than the USA.
 In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
     `
+  } else if (status === "TEST") {
+    messageBody = "test";
   }
 
-  return messageBody;
+  // sending message to user and status code to twilio
+  client.messages
+    .create({
+      from: process.env.TWILIO_NUMBER,
+      body: messageBody,
+      to: phoneNumber,
+    })
+    .then((message) => console.log(message))
+    .catch((err) => console.log(err));
 }
 
 module.exports = generateSMS;

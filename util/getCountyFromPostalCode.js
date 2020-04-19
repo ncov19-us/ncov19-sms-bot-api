@@ -5,42 +5,38 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: '../.env' });
 }
 
-// util imports
+
+//  util imports
 const generateSMS = require('./generateSMS.js');
+const stateAbbreviations = require('./stateAbbreviations.js');
 
-async function getCountyFromPostalCode(postalCode) {
-  // defining message body
-  let badInputMessage = '';
-  let locationInfo;
-  console.log(postalCode)
-  // initial declaration of county and state variables
-  let geoData = await axios.get(`https://api.opencagedata.com/geocode/v1/google-v3-json?q=countrycode=us|postcode=${postalCode}&key=${process.env.GEOCODING_KEY}&limit=1`)
-  console.log('data from geocode', geoData.data.results[0])
-  // console.log('types', geoData.data.results[0].address_components[])
-  // checking if provided zipcode is valid or not
-  if (geoData.data.results[0].formatted_address.includes("New York, NY")) {
-    locationInfo = {
-      state: "NY",
-      county: "New York"
-    }
-  } else if (!geoData.data.results[0] && toPhoneNumber !== "undefined") {
-    badInputMessage = generateSMS("BAD_INPUT");
+async function getCountyFromPostalCode(postalCode, phoneNumber) {
 
-  } else {
-    // cleaning response to to provide Dashboard API with what it is expecting
-    let formattedAddressArray = geoData.data.results[0].formatted_address.split(",");
-    let state = formattedAddressArray[1].split(' ')[1];
-    let countyArray = formattedAddressArray[0].split(' ');
-    countyArray.pop();
-    county = countyArray.join(' ');
+  let location, locationObj;
+
+  try {
     
-    locationInfo = {
-      state: state, // ex. CA
-      county: county, // ex. Los Angeles
-    };
+    // storing response in var
+    location = await axios.post(`${process.env.ZIP_CODE_URL}/zip`, { zip_code: postalCode });
+    // console.log(location)
+    locationObj = { // using state abbreviations object to convert full state name to 2 letter state code
   
+      state: stateAbbreviations[location.data.message.state_name], // ex. CA
+      county: location.data.message.county_name, // ex. Los Angeles
+    };
+
+  } catch(err) {
+
+    // if/else to send correct error message depending on what the issue is
+    if (err.response.status === 404) {
+      generateSMS("SERVER_ERROR", phoneNumber);
+    } else if (err.response.status === 422) {
+      generateSMS("BAD_INPUT", phoneNumber);
+    }
+
   }
-  return { 'locationInfo': locationInfo, 'badInputMessage': badInputMessage }
+
+  return locationObj;
 }
 
 module.exports = getCountyFromPostalCode;

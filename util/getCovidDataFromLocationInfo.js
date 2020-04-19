@@ -9,17 +9,17 @@ if (process.env.NODE_ENV !== "production") {
 const generateSMS = require('./generateSMS.js');
 
 // function makes a post request to the main dashboard API to query and return COVID-19 info based on location data provided by user
-async function getCovidDataFromLocationInfo(postOptions) {
+async function getCovidDataFromLocationInfo(locationInfo) {
   let countyData;
 
   try {
     // main POST request to dashboard API
-    countyData = await axios.post(`${process.env.DASHBOARD_API_URL}/county`, postOptions);
+    countyData = await axios.post(`${process.env.DASHBOARD_API_URL}/county`, locationInfo);
 
   } catch (err) {
     console.log(err);
     // handling error if dashboard API down
-    const messageBody = generateSMS("SERVER_ERROR");
+    generateSMS("SERVER_ERROR");
 
     return messageBody;
   }
