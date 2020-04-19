@@ -23,9 +23,8 @@ function setAndValidateVars(req, res, next) {
     // reassigning req.body to these values to use them in main route
     req.body = {
       postalCode: postalCode,
-      phoneNumber: phoneNumber
-    }
-
+      phoneNumber: phoneNumber,
+    };
   } else {
     // find out what the origin URL is from the Twilio Webhook to make this case more explicit
     postalCode = parseInt(req.body.Body);
@@ -34,8 +33,8 @@ function setAndValidateVars(req, res, next) {
     // reassigning req.body to these values to use them in main route
     req.body = {
       postalCode: postalCode,
-      phoneNumber: phoneNumber
-    }
+      phoneNumber: phoneNumber,
+    };
   }
 
   if (

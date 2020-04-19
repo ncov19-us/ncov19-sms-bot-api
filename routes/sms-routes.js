@@ -2,12 +2,17 @@
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: "../.env" });
 }
+
+// middleware
+const captcha = require("../middleware/validateCaptcha");
+
 // authenticated twilio import
 const client = require("twilio")(
   process.env.ACCOUNT_SID,
   process.env.AUTH_TOKEN
 );
 // const MessagingResponse = require('twilio').twiml.MessagingResponse;
+
 // one liner to instantiate Express Router
 const router = require("express").Router();
 const NodeCache = require("node-cache");
