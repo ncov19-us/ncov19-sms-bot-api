@@ -18,7 +18,7 @@ const getCovidDataFromPostalCode = require("../util/getCovidDataFromPostalCode.j
 const generateSMS = require("../util/generateSMS.js");
 
 // endpoint for SMS and web users
-router.post("/", userCheck.checkUsersMessageLimit, setAndValidateVars, async (req, res) => {
+router.post("/", captcha.validateToken, userCheck.checkUsersMessageLimit, setAndValidateVars, async (req, res) => {
   const phoneNumber = req.body.phoneNumber;
   const postalCode = req.body.postalCode;
 
