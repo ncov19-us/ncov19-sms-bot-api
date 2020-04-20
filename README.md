@@ -41,7 +41,15 @@ Unit/Integration tests are being done with Jest and Supertest respectively. To r
 
 ## 4️⃣ Contributors
 
-[<img src="https://github.com/favicon.ico" width="20"> ](https://github.com/ElijahMcKay)    [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="20"> ](https://www.linkedin.com/in/elijahmckay/)    [<img src="https://twitter.com/favicon.ico" width="20">](https://twitter.com/ElijahMcKay10)    **[Elijah McKay](https://github.com/ElijahMcKay)**    |    Maintainer | Core Dev
+[<img src="https://github.com/favicon.ico" width="20"> ](https://github.com/hurshd0)    [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="20"> ](https://www.linkedin.com/in/hurshd/)    [<img src="https://twitter.com/favicon.ico" width="20">](https://twitter.com/hurshd0)    **[Hursh Desai](https://hurshdesai.com/)**    |    Project Lead
+
+[<img src="https://github.com/favicon.ico" width="20"> ](https://github.com/ElijahMcKay)    [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="20"> ](https://www.linkedin.com/in/elijahmckay/)    [<img src="https://twitter.com/favicon.ico" width="20">](https://twitter.com/ElijahMcKay10)    **[Elijah McKay](https://github.com/ElijahMcKay)**    |    Maintainer | Project Lead
+
+### Version 1
+
+[<img src="https://github.com/favicon.ico" width="20"> ](https://github.com/AceMouty)    [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="20"> ](https://www.linkedin.com/in/acemouty/)    [<img src="https://twitter.com/favicon.ico" width="20">](https://twitter.com/AceMouty)    **[Kyle Guerrero](https://github.com/AceMouty)**    |    Maintainer | Core Dev
+
+### Beta 
 
 [<img src="https://github.com/favicon.ico" width="20"> ](https://github.com/azrap)    [ <img src="https://static.licdn.com/sc/h/al2o9zrvru7aqj8e1x2rzsrca" width="20"> ](https://www.linkedin.com/in/azrapanjwani/)    [<img src="https://twitter.com/favicon.ico" width="20">](https://twitter.com/AzraP)    **[Azra Panjwani](https://github.com/azrap)**    |    Contributor
 
