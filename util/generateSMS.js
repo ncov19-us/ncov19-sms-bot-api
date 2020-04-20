@@ -12,17 +12,12 @@ const client = require("twilio")(
 
 // util function
 const upOrDown = require("./upOrDown.js");
+const edgeCases = require("./edgeCases.js");
 
 // function that generates appropriate message SMS message depending on the success/error case
-function generateSMS(status, phoneNumber, countyInfo, userObj) {
+function generateSMS(status, phoneNumber, userObj, countyInfo) {
   // defining var to store appropriate message body
   let messageBody;
-
-  // Key should be name of edge case that the zip endpoint returns, value should be "appender"
-  let edgeCases = {
-    "New York": "City", // ex. needs to be "New York City" not "New York County"
-    "St. Louis": " ", // needs to be an empty string, or will equate to falsy
-  };
 
   // if all these cases are true, create success message body
   if (status === "SUCCESS" && typeof countyInfo !== "undefined") {
@@ -44,7 +39,7 @@ Total Report:
     }
 - Total Deaths: ${upOrDown(countyInfo.death)} ${countyInfo.death}
 
-Remaining Messages: (${userObj.msgLimit}/${process.env.DAILY_MESSAGE_LIMIT})
+Remaining Messages: ${userObj.msgLimit}
 
 For more details, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
@@ -62,6 +57,8 @@ In the meantime, visit COVID-19 Tracker 🌍:
     messageBody = `
 There was a problem on our end.  Please try again later!
 
+Remaining Messages: ${userObj.msgLimit}
+
 In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
                 `;
@@ -70,12 +67,16 @@ In the meantime, visit COVID-19 Tracker 🌍:
     messageBody = `
 I didn't understand that input.  Please use a valid US 5 digit zip code.
 
+Remaining Messages: ${userObj.msgLimit}
+
 In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
     `;
   } else if (status === "NOT_USA") {
     messageBody = `
 Sorry, our SMS service doesn't currently work in countries other than the USA.
+
+Remaining Messages: ${userObj.msgLimit}
 
 In the meantime, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
@@ -92,14 +93,20 @@ In the meantime, visit COVID-19 Tracker 🌍:
       to: phoneNumber,
     })
     .then((message) => {
-      let info = {
-        ourNum: message.from,
-        userNum: message.to,
-        created: message.dateCreated,
-        uri: `https://api.twilio.com${message.uri}`,
-      };
-
-      console.log(info);
+      if(message.county_name) {
+        let info = {
+          ourNum: message.from,
+          userNum: message.to,
+          created: message.dateCreated,
+          location: {
+            county: countyInfo.county_name,
+            state: countyInfo.state_name
+          },
+          uri: `https://api.twilio.com${message.uri}`,
+        };
+  
+        console.log(info);
+      } 
     })
     .catch((err) => console.log(err));
 }

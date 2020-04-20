@@ -9,6 +9,7 @@ if (process.env.NODE_ENV !== "production") {
 //  util imports
 const generateSMS = require('./generateSMS.js');
 const stateAbbreviations = require('./stateAbbreviations.js');
+const userCheck = require('../middleware/checkUsersMessageLimit.js');
 
 async function getCountyFromPostalCode(postalCode, phoneNumber) {
 
@@ -28,9 +29,9 @@ async function getCountyFromPostalCode(postalCode, phoneNumber) {
 
     // if/else to send correct error message depending on what the issue is
     if (err.response.status === 404) {
-      generateSMS("SERVER_ERROR", phoneNumber);
+      generateSMS("SERVER_ERROR", phoneNumbers, userCheck.myCache.get(phoneNumber));
     } else if (err.response.status === 422) {
-      generateSMS("BAD_INPUT", phoneNumber);
+      generateSMS("NOT_USA", phoneNumber, userCheck.myCache.get(phoneNumber));
     }
 
   }
