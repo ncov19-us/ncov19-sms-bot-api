@@ -16,7 +16,7 @@ function setAndValidateVars(req, res, next) {
     Number.isInteger(req.body.postalCode) === false
   ) {
     // if bad input gets through somehow, catch it here and send appropriate message
-    generateSMS("BAD_INPUT", req.body.phoneNumber, userCheck.myCache.get(req.body.phoneNumber));
+    generateSMS("BAD_INPUT", req.body.phoneNumber, req.body.postalCode, userCheck.myCache.get(req.body.phoneNumber));
 
     res.writeHead(200, { "Content-Type": "text/xml" });
 

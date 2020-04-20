@@ -15,7 +15,7 @@ const upOrDown = require("./upOrDown.js");
 const edgeCases = require("./edgeCases.js");
 
 // function that generates appropriate message SMS message depending on the success/error case
-function generateSMS(status, phoneNumber, userObj, countyInfo) {
+function generateSMS(status, phoneNumber, postalCode, userObj, countyInfo) {
   // defining var to store appropriate message body
   let messageBody;
 
@@ -93,10 +93,12 @@ In the meantime, visit COVID-19 Tracker 🌍:
       to: phoneNumber,
     })
     .then((message) => {
-      if(message.county_name) {
+      if(countyInfo.county_name) {
         let info = {
+          status: status,
           ourNum: message.from,
           userNum: message.to,
+          postalCode: postalCode,
           created: message.dateCreated,
           location: {
             county: countyInfo.county_name,
@@ -105,10 +107,26 @@ In the meantime, visit COVID-19 Tracker 🌍:
           uri: `https://api.twilio.com${message.uri}`,
         };
   
-        console.log(info);
-      } 
+        console.log('Success: ', info);
+      } else {
+        let info = {
+          status: status,
+          ourNum: process.env.TWILIO_NUMBER,
+          userNum: phoneNumber,
+          userPostalCode: postalCode
+        };
+        console.log('No County Info: ', info)
+      }
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      let errInfo = {
+        status: status,
+        ourNum: process.env.TWILIO_NUMBER,
+        userNum: phoneNumber,
+        userPostalCode: postalCode
+      };
+      console.log('Failure: ', errInfo);
+    });
 }
 
 module.exports = generateSMS;
