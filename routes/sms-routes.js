@@ -4,8 +4,6 @@ if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: "../.env" });
 }
 
-// middleware
-const captcha = require("../middleware/validateCaptcha");
 
 // one liner to instantiate Express Router
 const router = require("express").Router();
@@ -13,6 +11,7 @@ const router = require("express").Router();
 // middleware imports
 const userCheck = require("../middleware/checkUsersMessageLimit.js");
 const setAndValidateVars = require("../middleware/setAndValidateVars.js");
+const captcha = require("../middleware/validateCaptcha");
 
 // utility imports
 const getCovidDataFromPostalCode = require("../util/getCovidDataFromPostalCode.js");
@@ -35,8 +34,8 @@ router.post("/", userCheck.checkUsersMessageLimit, setAndValidateVars, async (re
       // generating and sending appropriate success message
       generateSMS("SUCCESS", phoneNumber, postalCode, userObj, countyInfo);
     }
-  
-  } catch(err) {
+
+  } catch (err) {
   }
 
   res.writeHead(200, { "Content-Type": "text/xml" });
