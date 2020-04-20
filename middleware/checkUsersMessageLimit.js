@@ -65,7 +65,7 @@ function checkUsersMessageLimit(req, res, next) {
     else if (userObj.msgLimit === 0 && userObj.alertedUser === false) {
       myCache.set(phoneNumber, { ...userObj, alertedUser: true });
   
-      generateSMS("LIMIT_REACHED", phoneNumber, userObj);
+      generateSMS("LIMIT_REACHED", phoneNumber, postalCode, userObj);
   
       res.writeHead(200, { "Content-Type": "text/xml" });
   
