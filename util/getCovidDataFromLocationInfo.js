@@ -16,17 +16,13 @@ async function getCovidDataFromLocationInfo(locationInfo, phoneNumber) {
     // main POST request to dashboard API
     countyData = await axios.post(`${process.env.DASHBOARD_API_URL}/county`, locationInfo);
 
+    let countyInfo = { ...countyData.data.message[0] };
+  
+    return countyInfo;
+
   } catch (err) {
     console.log(err);
-    // handling error if dashboard API down
-    generateSMS("SERVER_ERROR", phoneNumber);
-
-    return messageBody;
   }
-
-  let countyInfo = { ...countyData.data.message[0] };
-
-  return countyInfo;
 }
 
 module.exports = getCovidDataFromLocationInfo;
