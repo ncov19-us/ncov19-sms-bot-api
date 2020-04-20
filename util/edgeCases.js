@@ -1,6 +1,5 @@
   // Key should be name of edge case that the zip endpoint returns, value should be "appender"
   const edgeCases = {
-    "New York": "City", // ex. needs to be "New York City" not "New York County"
     "St. Louis": " ", // needs to be an empty string, or will equate to falsy
     "Acadia": "Parish",
     "Allen": "Parish",
