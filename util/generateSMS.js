@@ -27,7 +27,7 @@ ${countyInfo.county_name} ${
       edgeCases[countyInfo.county_name]
         ? `${edgeCases[countyInfo.county_name].trim()}`
         : "County"
-    }, ${countyInfo.state_name} 🇺🇸
+      }, ${countyInfo.state_name} 🇺🇸
 
 Today's Report: 
 - Confirmed Cases: ${upOrDown(countyInfo.new)} ${countyInfo.new}
@@ -36,8 +36,10 @@ Today's Report:
 Total Report:
 - Total Confirmed Cases: ${upOrDown(countyInfo.confirmed)} ${
       countyInfo.confirmed
-    }
+      }
 - Total Deaths: ${upOrDown(countyInfo.death)} ${countyInfo.death}
+
+Reply with another U.S. ZIP code for a new update. 
 
 Remaining Messages: ${userObj.msgLimit}
 
@@ -93,7 +95,7 @@ In the meantime, visit COVID-19 Tracker 🌍:
       to: phoneNumber,
     })
     .then((message) => {
-      if(countyInfo.county_name) {
+      if (countyInfo.county_name) {
         let info = {
           status: status,
           ourNum: message.from,
@@ -106,7 +108,7 @@ In the meantime, visit COVID-19 Tracker 🌍:
           },
           uri: `https://api.twilio.com${message.uri}`,
         };
-  
+
         console.log('Success: ', info);
       } else {
         let info = {
