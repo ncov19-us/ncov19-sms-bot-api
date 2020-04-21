@@ -39,11 +39,9 @@ Total Report:
       }
 - Total Deaths: ${upOrDown(countyInfo.death)} ${countyInfo.death}
 
-Reply with another U.S. ZIP code for a new update. You have ${userObj.msgLimit} messages left for today. 
+Reply with another US ZIP code for a new update. You have ${userObj.msgLimit} messages left for today. 
 
-For more details, visit COVID-19 Tracker 🌍: 
-- https://ncov19.us
-                `;
+For more info, visit COVID-19 Tracker🌍: https://ncov19.us`;
   } else if (status === "LIMIT_REACHED") {
     // if they've reached limit
     messageBody = `
