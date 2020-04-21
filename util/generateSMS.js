@@ -39,9 +39,7 @@ Total Report:
       }
 - Total Deaths: ${upOrDown(countyInfo.death)} ${countyInfo.death}
 
-Reply with another U.S. ZIP code for a new update. 
-
-Remaining Messages: ${userObj.msgLimit}
+Reply with another U.S. ZIP code for a new update. You have ${userObj.msgLimit} messages left for today. 
 
 For more details, visit COVID-19 Tracker 🌍: 
 - https://ncov19.us
@@ -57,7 +55,7 @@ In the meantime, visit COVID-19 Tracker 🌍:
   } else if (status === "SERVER_ERROR") {
     // if there was a server error
     messageBody = `
-There was a problem on our end.  Please try again later!
+There was a problem on our end 😢.  Please try again later!
 
 Remaining Messages: ${userObj.msgLimit}
 
@@ -67,7 +65,7 @@ In the meantime, visit COVID-19 Tracker 🌍:
   } else if (status === "BAD_INPUT") {
     // if users input was not valid
     messageBody = `
-I didn't understand that input.  Please use a valid US 5 digit zip code.
+I didn't understand that input 😓.  Please use a valid 5 digit US ZIP code.
 
 Remaining Messages: ${userObj.msgLimit}
 
@@ -76,7 +74,7 @@ In the meantime, visit COVID-19 Tracker 🌍:
     `;
   } else if (status === "NOT_USA") {
     messageBody = `
-Sorry, our SMS service doesn't currently work in countries other than the USA.
+Sorry 😢, our SMS service doesn't currently work in countries other than the USA.
 
 Remaining Messages: ${userObj.msgLimit}
 
