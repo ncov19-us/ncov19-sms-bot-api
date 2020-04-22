@@ -10,11 +10,7 @@ const userCheck = require("../middleware/checkUsersMessageLimit.js");
 
 // checking user input to make sure it's valid (in conjunction with frontend validation)
 function setAndValidateVars(req, res, next) {
-
-  if (
-    req.body.postalCode.toString().length !== 5 ||
-    Number.isInteger(req.body.postalCode) === false
-  ) {
+  if (req.body.postalCode.toString().length !== 5) {
     // if bad input gets through somehow, catch it here and send appropriate message
     generateSMS("BAD_INPUT", req.body.phoneNumber, req.body.postalCode, userCheck.myCache.get(req.body.phoneNumber));
 
