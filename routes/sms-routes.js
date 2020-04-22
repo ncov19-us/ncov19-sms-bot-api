@@ -22,6 +22,7 @@ router.post("/", captcha.validateToken, userCheck.checkUsersMessageLimit, setAnd
   const phoneNumber = req.body.phoneNumber;
   const postalCode = req.body.postalCode;
 
+
   // using util function to get state/county info
   let countyInfo = await getCovidDataFromPostalCode(postalCode, phoneNumber);
 
