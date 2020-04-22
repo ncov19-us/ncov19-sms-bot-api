@@ -124,6 +124,7 @@ In the meantime, visit COVID-19 Tracker 🌍:
         userPostalCode: postalCode
       };
       console.log('Failure: ', errInfo);
+      //console.log(err)
     });
 }
 

@@ -12,17 +12,21 @@ const userCheck = require('../middleware/checkUsersMessageLimit.js');
 
 async function getCovidDataFromPostalCode(postalCode, phoneNumber) {
 
-  let locationBody, location;
+  let res, location;
 
   try {
-
+    // console.log(postalCode)
+    // console.log(phoneNumber)
     // storing response in var
-    locationBody = await axios.post(`${process.env.DASHBOARD_API_URL}/zip`, { zip_code: postalCode });
-    // console.log(location.data.message)
-    location = locationBody.data.message;
+    res = await axios.post(`${process.env.DASHBOARD_API_URL}/zip`, { zip_code: postalCode });
+    // console.log(`Status code: ${res.status}`);
+    // console.log(`Status text: ${res.statusText}`);
+    // console.log(`Request method: ${res.request.method}`);
+    // console.log(`Path: ${res.request.path}`);
+    location = res.data.message;
 
-  } catch(err) {
 
+  } catch (err) {
     // if/else to send correct error message depending on what the issue is
     if (err.response.status === 404) {
       generateSMS("SERVER_ERROR", phoneNumber, postalCode, userCheck.myCache.get(phoneNumber));
